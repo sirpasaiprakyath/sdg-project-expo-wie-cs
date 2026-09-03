@@ -1,0 +1,902 @@
+[
+  {
+    "team_id": "SDG-001",
+    "team_name": "AI AACHARYA",
+    "members": [
+      {
+        "name": "Deva varun kumar.D",
+        "registration_number": "9921005120",
+        "department": "ECE",
+        "mail": "9921005120@klu.ac.in"
+      },
+      {
+        "name": "Pendli Nani",
+        "registration_number": "99230040217",
+        "department": "CSE",
+        "mail": "99230040217@klu.ac.in"
+      },
+      {
+        "name": "Pesaru Akhil",
+        "registration_number": "99230040401",
+        "department": "CSE",
+        "mail": "99230040401@klu.ac.in"
+      },
+      {
+        "name": "Pendli Navya",
+        "registration_number": "99230040724",
+        "department": "CSE",
+        "mail": "99230040724@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-002",
+    "team_name": "AJ Dragon",
+    "members": [
+      {
+        "name": "S.Ram Mathaan",
+        "registration_number": "9824037001",
+        "department": "CSE",
+        "mail": "9824037001@klu.ac.in"
+      },
+      {
+        "name": "Ravikumar",
+        "registration_number": "9824037012",
+        "department": "CSE",
+        "mail": "9824037012@klu.ac.in"
+      },
+      {
+        "name": "Sindhushree K C",
+        "registration_number": "9824037017",
+        "department": "CSE",
+        "mail": "9824037017@klu.ac.in"
+      },
+      {
+        "name": "Albin",
+        "registration_number": "9923037003",
+        "department": "CSE",
+        "mail": "9923037003@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-003",
+    "team_name": "APEX",
+    "members": [
+      {
+        "name": "MEER MAHDI HUSSAIN",
+        "registration_number": "9824037002",
+        "department": "CSE",
+        "mail": "9824037002@klu.ac.in"
+      },
+      {
+        "name": "Bolla Karthik",
+        "registration_number": "9824037013",
+        "department": "CSE",
+        "mail": "9824037013@klu.ac.in"
+      },
+      {
+        "name": "Ganavi N",
+        "registration_number": "9824037018",
+        "department": "CSE",
+        "mail": "9824037018@klu.ac.in"
+      },
+      {
+        "name": "Adithya Benny",
+        "registration_number": "9923037002",
+        "department": "CSE",
+        "mail": "9923037002@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-004",
+    "team_name": "BYTE FORCE",
+    "members": [
+      {
+        "name": "Valluri Siva Shankar",
+        "registration_number": "99240040075",
+        "department": "CSE",
+        "mail": "99240040075@klu.ac.in"
+      },
+      {
+        "name": "Vangala Nithin Reddy",
+        "registration_number": "99240040076",
+        "department": "CSE",
+        "mail": "99240040076@klu.ac.in"
+      },
+      {
+        "name": "KANTASPURTHI SWATHI",
+        "registration_number": "99240040570",
+        "department": "CSE",
+        "mail": "99240040570@klu.ac.in"
+      },
+      {
+        "name": "Bathula Subhash Teja",
+        "registration_number": "9924005181",
+        "department": "ECE",
+        "mail": "9924005181@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-005",
+    "team_name": "Code Slayers",
+    "members": [
+      {
+        "name": "B.Benarji kumar reddy",
+        "registration_number": "99230040011",
+        "department": "CSE",
+        "mail": "99230040011@klu.ac.in"
+      },
+      {
+        "name": "S Yaswanth",
+        "registration_number": "99230040163",
+        "department": "CSE",
+        "mail": "99230040163@klu.ac.in"
+      },
+      {
+        "name": "S.A.Suhel",
+        "registration_number": "99230040755",
+        "department": "CSE",
+        "mail": "99230040755@klu.ac.in"
+      },
+      {
+        "name": "Kadam Pushpendar",
+        "registration_number": "99250040342",
+        "department": "CSE",
+        "mail": "99250040342@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-006",
+    "team_name": "Code Titans",
+    "members": [
+      {
+        "name": "G.Narasimha Reddy",
+        "registration_number": "99240040506",
+        "department": "CSE",
+        "mail": "99240040506@klu.ac.in"
+      },
+      {
+        "name": "G.Vinod Kumar Reddy",
+        "registration_number": "99240040507",
+        "department": "CSE",
+        "mail": "99240040507@klu.ac.in"
+      },
+      {
+        "name": "M.Arun Kumar",
+        "registration_number": "99240040529",
+        "department": "CSE",
+        "mail": "99240040529@klu.ac.in"
+      },
+      {
+        "name": "Katam Vinil Reddy",
+        "registration_number": "99240040532",
+        "department": "CSE",
+        "mail": "99240040532@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-007",
+    "team_name": "CodeWarrior",
+    "members": [
+      {
+        "name": "Surisetti Hemanth Kumar",
+        "registration_number": "9826037004",
+        "department": "CSE",
+        "mail": "9826037004@klu.ac.in"
+      },
+      {
+        "name": "Ritik Anand",
+        "registration_number": "9826037009",
+        "department": "CSE",
+        "mail": "9826037009@klu.ac.in"
+      },
+      {
+        "name": "Abhishek kumar",
+        "registration_number": "9826037010",
+        "department": "CSE",
+        "mail": "9826037010@klu.ac.in"
+      },
+      {
+        "name": "Nantha Kumar.T",
+        "registration_number": "9925037010",
+        "department": "CSE",
+        "mail": "9925037010@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-008",
+    "team_name": "Codex",
+    "members": [
+      {
+        "name": "Kollamoram Rajesh",
+        "registration_number": "99230040615",
+        "department": "CSE",
+        "mail": "99230040615@klu.ac.in"
+      },
+      {
+        "name": "Yenuganti Tarun Kumar",
+        "registration_number": "99230040893",
+        "department": "CSE",
+        "mail": "99230040893@klu.ac.in"
+      },
+      {
+        "name": "CH Hari teja",
+        "registration_number": "99230040901",
+        "department": "CSE",
+        "mail": "99230040901@klu.ac.in"
+      },
+      {
+        "name": "M Venkata Naveen",
+        "registration_number": "99230040903",
+        "department": "CSE",
+        "mail": "99230040903@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-009",
+    "team_name": "DINOSAUR'S",
+    "members": [
+      {
+        "name": "GEDELA GIREESWAR",
+        "registration_number": "9923005014",
+        "department": "ECE",
+        "mail": "9923005014@klu.ac.in"
+      },
+      {
+        "name": "KOLLI SATISH",
+        "registration_number": "9923005023",
+        "department": "ECE",
+        "mail": "9923005023@klu.ac.in"
+      },
+      {
+        "name": "KUDUMULA GANESH KUMAR",
+        "registration_number": "9923005024",
+        "department": "ECE",
+        "mail": "9923005024@klu.ac.in"
+      },
+      {
+        "name": "GORRIPOTHU LOHITAKSH",
+        "registration_number": "9923005085",
+        "department": "ECE",
+        "mail": "9923005085@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-010",
+    "team_name": "INNOVARA",
+    "members": [
+      {
+        "name": "AVULA THANEESHA",
+        "registration_number": "99240040385",
+        "department": "CSE",
+        "mail": "99240040385@klu.ac.in"
+      },
+      {
+        "name": "VANGA SUNNY",
+        "registration_number": "99240040558",
+        "department": "CSE",
+        "mail": "99240040558@klu.ac.in"
+      },
+      {
+        "name": "VASA VENNELA",
+        "registration_number": "99240040589",
+        "department": "CSE",
+        "mail": "99240040589@klu.ac.in"
+      },
+      {
+        "name": "DOKKU SAAKETHRAM",
+        "registration_number": "9924009008",
+        "department": "MECHANICAL",
+        "mail": "9924009008@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-011",
+    "team_name": "LEO ENGG",
+    "members": [
+      {
+        "name": "Vennapusa Sai charan reddy",
+        "registration_number": "9824005011",
+        "department": "ECE",
+        "mail": "9824005011@klu.ac.in"
+      },
+      {
+        "name": "Gandavarapu Himasagar",
+        "registration_number": "99230040894",
+        "department": "CSE",
+        "mail": "99230040894@klu.ac.in"
+      },
+      {
+        "name": "Gudaru Narendra",
+        "registration_number": "99230040902",
+        "department": "CSE",
+        "mail": "99230040902@klu.ac.in"
+      },
+      {
+        "name": "Dasari Uday",
+        "registration_number": "9923005013",
+        "department": "ECE",
+        "mail": "9923005013@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-012",
+    "team_name": "MARVEL BOYS",
+    "members": [
+      {
+        "name": "NALLAM VENKATA VINAY",
+        "registration_number": "99240040661",
+        "department": "CSE",
+        "mail": "99240040661@klu.ac.in"
+      },
+      {
+        "name": "POLUBOYINA ARYA VARDHAN",
+        "registration_number": "99240040828",
+        "department": "CSE",
+        "mail": "99240040828@klu.ac.in"
+      },
+      {
+        "name": "BARAKAM TARUN TEJ",
+        "registration_number": "99240040833",
+        "department": "CSE",
+        "mail": "99240040833@klu.ac.in"
+      },
+      {
+        "name": "BHAVANAM VINAY KUMAR REDDY",
+        "registration_number": "99240040834",
+        "department": "CSE",
+        "mail": "99240040834@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-013",
+    "team_name": "NexGen",
+    "members": [
+      {
+        "name": "Ramkasi Yerramsetty",
+        "registration_number": "99230040071",
+        "department": "CSE",
+        "mail": "99230040071@klu.ac.in"
+      },
+      {
+        "name": "RANJANA GAYATHRI",
+        "registration_number": "99230041167",
+        "department": "CSE",
+        "mail": "99230041167@klu.ac.in"
+      },
+      {
+        "name": "SAYED AFAN ALI",
+        "registration_number": "99230041194",
+        "department": "CSE",
+        "mail": "99230041194@klu.ac.in"
+      },
+      {
+        "name": "PUNNAPU JASWANTH",
+        "registration_number": "9923005037",
+        "department": "ECE",
+        "mail": "9923005037@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-014",
+    "team_name": "NextLinkers",
+    "members": [
+      {
+        "name": "Pinjala Monika Krishna",
+        "registration_number": "99240040317",
+        "department": "CSE",
+        "mail": "99240040317@klu.ac.in"
+      },
+      {
+        "name": "Kasu Chaitanya Krishna Reddy",
+        "registration_number": "99240040564",
+        "department": "CSE",
+        "mail": "99240040564@klu.ac.in"
+      },
+      {
+        "name": "Badusha K S",
+        "registration_number": "9924037002",
+        "department": "CSE",
+        "mail": "9924037002@klu.ac.in"
+      },
+      {
+        "name": "Amrutha Renjith",
+        "registration_number": "9924037005",
+        "department": "CSE",
+        "mail": "9924037005@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-015",
+    "team_name": "POWER RANGERS",
+    "members": [
+      {
+        "name": "K.Chathurya",
+        "registration_number": "9923005025",
+        "department": "ECE",
+        "mail": "9923005025@klu.ac.in"
+      },
+      {
+        "name": "A.Vyshnavi",
+        "registration_number": "9923005057",
+        "department": "ECE",
+        "mail": "9923005057@klu.ac.in"
+      },
+      {
+        "name": "B.Kamakshi",
+        "registration_number": "9923005061",
+        "department": "ECE",
+        "mail": "9923005061@klu.ac.in"
+      },
+      {
+        "name": "V. Vinay",
+        "registration_number": "9923005140",
+        "department": "ECE",
+        "mail": "9923005140@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-016",
+    "team_name": "Salar Devara",
+    "members": [
+      {
+        "name": "Paruchuri Sandeep Chowdary",
+        "registration_number": "99230040150",
+        "department": "CSE",
+        "mail": "99230040150@klu.ac.in"
+      },
+      {
+        "name": "Yeddula Harsha Vardhan Reddy",
+        "registration_number": "9923005051",
+        "department": "ECE",
+        "mail": "9923005051@klu.ac.in"
+      },
+      {
+        "name": "Sarithala Sadhik",
+        "registration_number": "9923005174",
+        "department": "ECE",
+        "mail": "9923005174@klu.ac.in"
+      },
+      {
+        "name": "Bobburi Prasad",
+        "registration_number": "9923005282",
+        "department": "ECE",
+        "mail": "9923005282@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-017",
+    "team_name": "Silent Sparks",
+    "members": [
+      {
+        "name": "MARRIPALLY DEEKSHITH",
+        "registration_number": "9826037001",
+        "department": "CSE",
+        "mail": "9826037001@klu.ac.in"
+      },
+      {
+        "name": "CYRIL PHILIP",
+        "registration_number": "9925037001",
+        "department": "CSE",
+        "mail": "9925037001@klu.ac.in"
+      },
+      {
+        "name": "JOEL BIJU",
+        "registration_number": "9925037003",
+        "department": "CSE",
+        "mail": "9925037003@klu.ac.in"
+      },
+      {
+        "name": "MUHAMMAD RASAL",
+        "registration_number": "9925037008",
+        "department": "CSE",
+        "mail": "9925037008@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-018",
+    "team_name": "smart work",
+    "members": [
+      {
+        "name": "S.Kavya",
+        "registration_number": "99230041093",
+        "department": "CSE",
+        "mail": "99230041093@klu.ac.in"
+      },
+      {
+        "name": "M.Mariselvi",
+        "registration_number": "99230041094",
+        "department": "CSE",
+        "mail": "99230041094@klu.ac.in"
+      },
+      {
+        "name": "G.Sudharsan",
+        "registration_number": "99230041105",
+        "department": "CSE",
+        "mail": "99230041105@klu.ac.in"
+      },
+      {
+        "name": "R.Kowshalya",
+        "registration_number": "99230041117",
+        "department": "CSE",
+        "mail": "99230041117@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-019",
+    "team_name": "Sustainova",
+    "members": [
+      {
+        "name": "Boya sindhu",
+        "registration_number": "99240040427",
+        "department": "CSE",
+        "mail": "99240040427@klu.ac.in"
+      },
+      {
+        "name": "CHITTIBOYINA OBULESU",
+        "registration_number": "99240040431",
+        "department": "CSE",
+        "mail": "99240040431@klu.ac.in"
+      },
+      {
+        "name": "Derangula Hemalatha",
+        "registration_number": "99240040895",
+        "department": "CSE",
+        "mail": "99240040895@klu.ac.in"
+      },
+      {
+        "name": "M.Srinanda",
+        "registration_number": "9924005224",
+        "department": "ECE",
+        "mail": "9924005224@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-020",
+    "team_name": "Team Apex",
+    "members": [
+      {
+        "name": "G Manish Kumar",
+        "registration_number": "99220041878",
+        "department": "CSE",
+        "mail": "99220041878@klu.ac.in"
+      },
+      {
+        "name": "Siddhardha",
+        "registration_number": "99230040752",
+        "department": "CSE",
+        "mail": "99230040752@klu.ac.in"
+      },
+      {
+        "name": "Narendra B",
+        "registration_number": "99230040834",
+        "department": "CSE",
+        "mail": "99230040834@klu.ac.in"
+      },
+      {
+        "name": "Madhu Babu",
+        "registration_number": "9923008039",
+        "department": "IT",
+        "mail": "9923008039@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-021",
+    "team_name": "Team mates",
+    "members": [
+      {
+        "name": "Nandayala Vamsi Krishna yadav",
+        "registration_number": "99220041905",
+        "department": "CSE",
+        "mail": "99220041905@klu.ac.in"
+      },
+      {
+        "name": "Mamidala sathwik",
+        "registration_number": "9923005029",
+        "department": "ECE",
+        "mail": "9923005029@klu.ac.in"
+      },
+      {
+        "name": "Uppara.Vijay",
+        "registration_number": "9923005044",
+        "department": "ECE",
+        "mail": "9923005044@klu.ac.in"
+      },
+      {
+        "name": "Devandla charan teja",
+        "registration_number": "9923005073",
+        "department": "ECE",
+        "mail": "9923005073@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-022",
+    "team_name": "Team OG",
+    "members": [
+      {
+        "name": "T Venkata Sai Charan",
+        "registration_number": "99230040196",
+        "department": "CSE",
+        "mail": "99230040196@klu.ac.in"
+      },
+      {
+        "name": "Chavva Anil Kumar Reddy",
+        "registration_number": "99230040278",
+        "department": "CSE",
+        "mail": "99230040278@klu.ac.in"
+      },
+      {
+        "name": "Gajula Baba Iqbal",
+        "registration_number": "99230040540",
+        "department": "CSE",
+        "mail": "99230040540@klu.ac.in"
+      },
+      {
+        "name": "Manjula Vamshi",
+        "registration_number": "99230041238",
+        "department": "CSE",
+        "mail": "99230041238@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-023",
+    "team_name": "TEAM PHOENIX",
+    "members": [
+      {
+        "name": "UPPUCHARLA POORNA LAKSHMI NARAYANA",
+        "registration_number": "99240040485",
+        "department": "CSE",
+        "mail": "99240040485@klu.ac.in"
+      },
+      {
+        "name": "NADIPILLI RAJESH",
+        "registration_number": "99240041058",
+        "department": "CSE",
+        "mail": "99240041058@klu.ac.in"
+      },
+      {
+        "name": "MEDISETTY PURNA CHANDU",
+        "registration_number": "99240041265",
+        "department": "CSE",
+        "mail": "99240041265@klu.ac.in"
+      },
+      {
+        "name": "KOPPOLU LAKSHMI NIVAS",
+        "registration_number": "9924030006",
+        "department": "AERO",
+        "mail": "9924030006@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-024",
+    "team_name": "Team Pirates",
+    "members": [
+      {
+        "name": "Anbu Selvan A",
+        "registration_number": "9924022066",
+        "department": "B.Com CA",
+        "mail": "9924022066@klu.ac.in"
+      },
+      {
+        "name": "Maha Eswaran P",
+        "registration_number": "9924022083",
+        "department": "B.com CA",
+        "mail": "9924022083@klu.ac.in"
+      },
+      {
+        "name": "Koodalingam M",
+        "registration_number": "9924022086",
+        "department": "B.Com CA",
+        "mail": "9924022086@klu.ac.in"
+      },
+      {
+        "name": "Krishnan P",
+        "registration_number": "9924022091",
+        "department": "B.Com CA",
+        "mail": "9924022091@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-025",
+    "team_name": "Team Thunders",
+    "members": [
+      {
+        "name": "D.VASANTHA LAKSHMI",
+        "registration_number": "99230040288",
+        "department": "CSE",
+        "mail": "99230040288@klu.ac.in"
+      },
+      {
+        "name": "G.REDDY VARDHAN",
+        "registration_number": "9923005080",
+        "department": "ECE",
+        "mail": "9923005080@klu.ac.in"
+      },
+      {
+        "name": "P.MADHU CHARAN REDDY",
+        "registration_number": "9923005123",
+        "department": "ECE",
+        "mail": "9923005123@klu.ac.in"
+      },
+      {
+        "name": "P.TEJA SIMHA REDDY",
+        "registration_number": "9923005316",
+        "department": "ECE",
+        "mail": "9923005316@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-026",
+    "team_name": "TeamSouL",
+    "members": [
+      {
+        "name": "REDDYPALLI  MEENAKSHI",
+        "registration_number": "9824037008",
+        "department": "CSE",
+        "mail": "9824037008@klu.ac.in"
+      },
+      {
+        "name": "CHAKALI JHANSI",
+        "registration_number": "9824037009",
+        "department": "CSE",
+        "mail": "9824037009@klu.ac.in"
+      },
+      {
+        "name": "MADIGA PRISKILLA",
+        "registration_number": "9824037010",
+        "department": "CSE",
+        "mail": "9824037010@klu.ac.in"
+      },
+      {
+        "name": "KARTHIK A",
+        "registration_number": "9824037023",
+        "department": "CSE",
+        "mail": "9824037023@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-027",
+    "team_name": "THE  VIKINGS",
+    "members": [
+      {
+        "name": "Yaram Harish",
+        "registration_number": "99220042129",
+        "department": "CSE",
+        "mail": "99220042129@klu.ac.in"
+      },
+      {
+        "name": "D Venkata Surya",
+        "registration_number": "99220042149",
+        "department": "CSE",
+        "mail": "99220042149@klu.ac.in"
+      },
+      {
+        "name": "Yaram Harini",
+        "registration_number": "99230041021",
+        "department": "CSE",
+        "mail": "99230041021@klu.ac.in"
+      },
+      {
+        "name": "Yeddula Nikitha",
+        "registration_number": "99230041062",
+        "department": "CSE",
+        "mail": "99230041062@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-028",
+    "team_name": "The Og's",
+    "members": [
+      {
+        "name": "Muppidi Lokesh kumar",
+        "registration_number": "9923005033",
+        "department": "ECE",
+        "mail": "9923005033@klu.ac.in"
+      },
+      {
+        "name": "B. Love shiv",
+        "registration_number": "99240041288",
+        "department": "CSE",
+        "mail": "99240041288@klu.ac.in"
+      },
+      {
+        "name": "G. Sireesha",
+        "registration_number": "99240041431",
+        "department": "CSE",
+        "mail": "99240041431@klu.ac.in"
+      },
+      {
+        "name": "S . Ankitha",
+        "registration_number": "9924005180",
+        "department": "ECE",
+        "mail": "9924005180@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-029",
+    "team_name": "THE TITANS",
+    "members": [
+      {
+        "name": "Y . Sathya Narayana Reddy",
+        "registration_number": "9923005049",
+        "department": "ECE",
+        "mail": "9923005049@klu.ac.in"
+      },
+      {
+        "name": "B . Veenakshi",
+        "registration_number": "9923005062",
+        "department": "ECE",
+        "mail": "9923005062@klu.ac.in"
+      },
+      {
+        "name": "G .Uma Ganesh",
+        "registration_number": "9923005083",
+        "department": "ECE",
+        "mail": "9923005083@klu.ac.in"
+      },
+      {
+        "name": "M . Leela Madhu Ganesh",
+        "registration_number": "9923005109",
+        "department": "ECE",
+        "mail": "9923005109@klu.ac.in"
+      }
+    ]
+  },
+  {
+    "team_id": "SDG-030",
+    "team_name": "Team Mugen",
+    "members": [
+      {
+        "name": "Laxman Sai Nakerekanti",
+        "registration_number": "9921004932",
+        "department": "CSE",
+        "mail": "9921004932@klu.ac.in"
+      },
+      {
+        "name": "KOVVURU BHARATH KUMAR REDDY",
+        "registration_number": "9921005092",
+        "department": "ECE",
+        "mail": "9921005092@klu.ac.in"
+      },
+      {
+        "name": "Balan Ekambaram A",
+        "registration_number": "9922011012",
+        "department": "Food-Technology",
+        "mail": "9922011012@klu.ac.in"
+      },
+      {
+        "name": "Thota Udaysri",
+        "registration_number": "9923001005",
+        "department": "Bio",
+        "mail": "9923001005@klu.ac.in"
+      }
+    ]
+  }
+]
