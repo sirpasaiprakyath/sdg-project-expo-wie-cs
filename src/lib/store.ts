@@ -415,6 +415,45 @@ export function getReviewRounds(): ReviewRound[] {
 export function saveReviewRounds(rounds: ReviewRound[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(ROUNDS_KEY, JSON.stringify(rounds));
+  try {
+    const roundsDocRef = doc(db, 'config', 'review_rounds');
+    setDoc(roundsDocRef, { rounds }, { merge: true }).catch((err) => {
+      console.warn('Firestore saveReviewRounds error:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore saveReviewRounds error:', e);
+  }
+}
+
+export function subscribeReviewRounds(onChange: (rounds: ReviewRound[]) => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  const local = getReviewRounds();
+  onChange(local);
+
+  try {
+    const roundsDocRef = doc(db, 'config', 'review_rounds');
+    const unsubscribe = onSnapshot(
+      roundsDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (Array.isArray(data?.rounds)) {
+            const remoteRounds = data.rounds as ReviewRound[];
+            localStorage.setItem(ROUNDS_KEY, JSON.stringify(remoteRounds));
+            onChange(remoteRounds);
+          }
+        }
+      },
+      (err) => {
+        console.warn('Firestore review_rounds listener warning:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (e) {
+    console.warn('Firestore review_rounds listener error:', e);
+    return () => {};
+  }
 }
 
 export function getEvaluations(): ReviewerEvaluation[] {
@@ -433,7 +472,7 @@ export function getEvaluations(): ReviewerEvaluation[] {
 export function saveEvaluation(evaluation: ReviewerEvaluation): void {
   const evals = getEvaluations();
   const idx = evals.findIndex(
-    (e) => e.teamId === evaluation.teamId && e.roundId === evaluation.roundId && e.reviewerId === evaluation.reviewerId
+    (e) => e.teamId === evaluation.teamId && e.roundId === evaluation.roundId
   );
   if (idx !== -1) {
     evals[idx] = evaluation;
@@ -442,6 +481,61 @@ export function saveEvaluation(evaluation: ReviewerEvaluation): void {
   }
   if (typeof window !== 'undefined') {
     localStorage.setItem(EVALS_KEY, JSON.stringify(evals));
+  }
+  try {
+    const evalsDocRef = doc(db, 'config', 'evaluations');
+    setDoc(evalsDocRef, { evaluations: evals }, { merge: true }).catch((err) => {
+      console.warn('Firestore saveEvaluation error:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore saveEvaluation error:', e);
+  }
+}
+
+export function subscribeEvaluations(onChange: (evaluations: ReviewerEvaluation[]) => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  const local = getEvaluations();
+  onChange(local);
+
+  try {
+    const evalsDocRef = doc(db, 'config', 'evaluations');
+    const unsubscribe = onSnapshot(
+      evalsDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (Array.isArray(data?.evaluations)) {
+            const remoteEvals = data.evaluations as ReviewerEvaluation[];
+            const localEvals = getEvaluations();
+
+            const evalMap = new Map<string, ReviewerEvaluation>();
+            remoteEvals.forEach((e) => evalMap.set(`${e.teamId}_${e.roundId}`, e));
+            localEvals.forEach((e) => {
+              const key = `${e.teamId}_${e.roundId}`;
+              if (!evalMap.has(key)) {
+                evalMap.set(key, e);
+              }
+            });
+
+            const merged = Array.from(evalMap.values());
+            localStorage.setItem(EVALS_KEY, JSON.stringify(merged));
+            onChange(merged);
+
+            if (merged.length > remoteEvals.length) {
+              setDoc(evalsDocRef, { evaluations: merged }, { merge: true }).catch(() => {});
+            }
+          }
+        }
+      },
+      (err) => {
+        console.warn('Firestore evaluations listener warning:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (e) {
+    console.warn('Firestore evaluations listener error:', e);
+    return () => {};
   }
 }
 

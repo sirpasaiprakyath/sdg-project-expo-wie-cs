@@ -16,6 +16,9 @@ import {
   subscribeAttendanceRecords,
   subscribeTeams,
   subscribeProblemStatements,
+  subscribeReviewRounds,
+  subscribeEvaluations,
+  saveEvaluation,
   clearAllAttendanceSessions,
   getProblemStatements,
   getReviewRounds,
@@ -114,13 +117,65 @@ export default function AdminDashboard() {
       setProblemStatements(updatedPS);
     });
 
+    const unsubRounds = subscribeReviewRounds((updatedRounds) => {
+      setRounds(updatedRounds);
+    });
+
+    const unsubEvals = subscribeEvaluations((updatedEvals) => {
+      setEvaluations(updatedEvals);
+    });
+
     return () => {
       unsubSessions();
       unsubRecords();
       unsubTeams();
       unsubPS();
+      unsubRounds();
+      unsubEvals();
     };
   }, []);
+
+  // Modal state for Admin adding/editing marks for a team & round
+  const [adminGradeModal, setAdminGradeModal] = useState<{
+    teamId: string;
+    teamName: string;
+    roundId: string;
+    roundName: string;
+    currentMarks: number | string;
+    currentComments: string;
+  } | null>(null);
+
+  const handleSaveAdminMarks = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminGradeModal) return;
+
+    const scoreNum = Number(adminGradeModal.currentMarks);
+    if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
+      alert("Please enter valid marks between 0 and 100.");
+      return;
+    }
+
+    const roundObj = rounds.find((r) => r.id === adminGradeModal.roundId);
+    const roundNum = roundObj ? roundObj.roundNumber : 1;
+
+    const evalData: ReviewerEvaluation = {
+      id: `eval_admin_${adminGradeModal.teamId}_${adminGradeModal.roundId}_${Date.now()}`,
+      reviewerId: "admin_override",
+      reviewerName: "Admin Override",
+      teamId: adminGradeModal.teamId,
+      teamName: adminGradeModal.teamName,
+      roundId: adminGradeModal.roundId,
+      roundName: adminGradeModal.roundName,
+      roundNumber: roundNum,
+      marks: scoreNum,
+      comments: adminGradeModal.currentComments.trim(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveEvaluation(evalData);
+    setEvaluations(getEvaluations());
+    setAdminGradeModal(null);
+  };
 
   // Create Review Round Handler (Enforces ONLY ONE active round at a time)
   const handleCreateRound = (e: React.FormEvent) => {
@@ -1462,17 +1517,38 @@ export default function AdminDashboard() {
 
                           {rounds.map((r) => {
                             const score = item.roundScores[r.roundNumber];
+                            const existingEval = evaluations.find(
+                              (e) => e.teamId === item.team.id && e.roundId === r.id
+                            );
                             return (
                               <td key={r.id} className="py-4 px-4 text-center">
-                                {score !== undefined ? (
-                                  <span className="neu-badge text-emerald-800 bg-emerald-100 font-extrabold text-xs px-2.5 py-1">
-                                    {score} / 100
-                                  </span>
-                                ) : (
-                                  <span className="text-neu-muted text-[11px] font-semibold italic">
-                                    Pending
-                                  </span>
-                                )}
+                                <div className="flex items-center justify-center gap-2">
+                                  {score !== undefined ? (
+                                    <span className="neu-badge text-emerald-800 bg-emerald-100 font-extrabold text-xs px-2.5 py-1">
+                                      {score} / 100
+                                    </span>
+                                  ) : (
+                                    <span className="text-neu-muted text-[11px] font-semibold italic">
+                                      Pending
+                                    </span>
+                                  )}
+                                  <button
+                                    onClick={() =>
+                                      setAdminGradeModal({
+                                        teamId: item.team.id,
+                                        teamName: item.team.teamName,
+                                        roundId: r.id,
+                                        roundName: r.name,
+                                        currentMarks: score !== undefined ? score : "",
+                                        currentComments: existingEval?.comments || "",
+                                      })
+                                    }
+                                    className="neu-btn px-2 py-1 text-[10px] font-extrabold text-neu-gold hover:text-neu-text rounded-lg flex items-center gap-1 shadow-sm"
+                                    title="Click to enter or edit marks for this team"
+                                  >
+                                    <span>{score !== undefined ? "✏️ Edit" : "+ Grade"}</span>
+                                  </button>
+                                </div>
                               </td>
                             );
                           })}
@@ -1659,6 +1735,89 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* ADMIN GRADE & MARKS ENTRY MODAL */}
+        {adminGradeModal && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="neu-raised-lg p-6 sm:p-8 rounded-3xl bg-[#FAF8F4] max-w-md w-full space-y-5 relative">
+              <button
+                onClick={() => setAdminGradeModal(null)}
+                className="absolute top-4 right-4 p-2 text-neu-muted hover:text-neu-text"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+
+              <div>
+                <span className="neu-badge text-neu-gold font-extrabold text-xs mb-1">
+                  ADMIN MARKS ENTRY & OVERRIDE
+                </span>
+                <h3 className="text-xl font-black text-neu-text">
+                  {adminGradeModal.teamId} — {adminGradeModal.teamName}
+                </h3>
+                <p className="text-xs text-neu-muted font-semibold mt-0.5">
+                  Evaluating for: <strong className="text-neu-gold font-black">{adminGradeModal.roundName}</strong>
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveAdminMarks} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-extrabold text-neu-gold uppercase tracking-wider mb-2">
+                    MARKS OUT OF 100 *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={adminGradeModal.currentMarks}
+                    onChange={(e) =>
+                      setAdminGradeModal({
+                        ...adminGradeModal,
+                        currentMarks: e.target.value,
+                      })
+                    }
+                    placeholder="Enter score (0 - 100)"
+                    className="w-full neu-inset p-3.5 text-base font-black text-neu-text placeholder:text-neu-muted focus:outline-none rounded-xl"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-extrabold text-neu-gold uppercase tracking-wider mb-2">
+                    FEEDBACK / EVALUATOR COMMENTS (OPTIONAL)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={adminGradeModal.currentComments}
+                    onChange={(e) =>
+                      setAdminGradeModal({
+                        ...adminGradeModal,
+                        currentComments: e.target.value,
+                      })
+                    }
+                    placeholder="Enter evaluation feedback..."
+                    className="w-full neu-inset p-3 text-xs font-semibold text-neu-text placeholder:text-neu-muted focus:outline-none rounded-xl"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setAdminGradeModal(null)}
+                    className="neu-btn px-4 py-2.5 text-xs font-bold text-neu-muted hover:text-neu-text rounded-xl"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="neu-btn neu-btn-gold px-6 py-2.5 text-xs font-extrabold shadow-md rounded-xl"
+                  >
+                    SAVE MARKS
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

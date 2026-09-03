@@ -62,13 +62,15 @@ export default function ReviewerWorkspace() {
       setReviewerAuth(false);
     }
 
-    const loadedTeams = getInitialTeams();
+    const loadedTeams = getInitialTeams().filter(
+      (t) => t.id !== "SDG-030" && t.id !== "SGD-030"
+    );
     setTeams(loadedTeams);
     setProblemStatements(getProblemStatements());
     setRounds(getReviewRounds());
     setEvaluations(getEvaluations());
 
-    if (loadedTeams.length > 0 && !selectedTeamId) {
+    if (loadedTeams.length > 0 && (!selectedTeamId || selectedTeamId === "SDG-030" || selectedTeamId === "SGD-030")) {
       setSelectedTeamId(loadedTeams[0].id);
     }
   }, [selectedTeamId]);
