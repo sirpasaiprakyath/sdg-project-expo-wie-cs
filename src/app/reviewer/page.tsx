@@ -126,6 +126,14 @@ export default function ReviewerWorkspace() {
     e.preventDefault();
     if (!selectedTeamId || !activeRound || !sessionUser) return;
 
+    const existingEval = evaluations.find(
+      (ev) => ev.teamId === selectedTeamId && ev.roundId === activeRound.id
+    );
+    if (existingEval) {
+      alert("Marks for this team have already been submitted and locked. Only the Admin can modify submitted marks.");
+      return;
+    }
+
     const val = Number(marksInput);
     if (isNaN(val) || val < 0 || val > 100) {
       alert("Please enter valid marks between 0 and 100.");
@@ -363,56 +371,93 @@ export default function ReviewerWorkspace() {
               
               {/* Marks Entry Form for Active Round */}
               {activeRound ? (
-                <form onSubmit={handleSaveMarks} className="neu-raised p-6 sm:p-8 rounded-3xl space-y-5 bg-[#FAF8F4] border-2 border-neu-gold/30">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-extrabold text-neu-gold uppercase tracking-widest block">
-                        ● EVALUATION MARKS FOR {activeRound.name.toUpperCase()}
-                      </span>
-                      <h3 className="text-lg font-black text-neu-text">Enter Team Marks (0 - 100)</h3>
-                    </div>
-                    <span className="neu-badge text-neu-gold font-black text-xs px-3.5 py-1.5 bg-white shadow-sm">
-                      MAX 100 PTS
-                    </span>
-                  </div>
+                (() => {
+                  const existingEval = evaluations.find(
+                    (e) => e.teamId === currentTeam.id && e.roundId === activeRound.id
+                  );
+                  return (
+                    <form onSubmit={handleSaveMarks} className="neu-raised p-6 sm:p-8 rounded-3xl space-y-5 bg-[#FAF8F4] border-2 border-neu-gold/30">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] font-extrabold text-neu-gold uppercase tracking-widest block">
+                            ● EVALUATION MARKS FOR {activeRound.name.toUpperCase()}
+                          </span>
+                          <h3 className="text-lg font-black text-neu-text">
+                            {existingEval ? "Submitted Team Marks (Locked)" : "Enter Team Marks (0 - 100)"}
+                          </h3>
+                        </div>
+                        <span className="neu-badge text-neu-gold font-black text-xs px-3.5 py-1.5 bg-white shadow-sm">
+                          MAX 100 PTS
+                        </span>
+                      </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-neu-muted uppercase">
-                      Enter Marks out of 100 *
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={marksInput}
-                      onChange={(e) => setMarksInput(e.target.value)}
-                      placeholder="e.g. 85"
-                      className="w-full neu-inset p-4 text-xl font-black text-neu-text placeholder:text-neu-muted/40 focus:outline-none focus:ring-2 focus:ring-neu-gold/50 rounded-2xl"
-                      required
-                    />
-                  </div>
+                      {existingEval && (
+                        <div className="neu-inset p-4 rounded-2xl bg-amber-50/90 border border-amber-300 text-amber-950 text-xs font-extrabold flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-amber-700 shrink-0" />
+                            <span>Marks for {currentTeam.id} ({activeRound.name}) have been submitted and locked. Contact Admin Coordinator if modification is needed.</span>
+                          </div>
+                          <span className="neu-badge text-amber-900 bg-white font-black text-[10px] shrink-0">
+                            🔒 SUBMITTED & LOCKED
+                          </span>
+                        </div>
+                      )}
 
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-neu-muted uppercase">
-                      Reviewer Feedback / Remarks (Optional)
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={feedbackComments}
-                      onChange={(e) => setFeedbackComments(e.target.value)}
-                      placeholder="Enter constructive evaluation feedback..."
-                      className="w-full neu-inset p-3.5 text-xs font-semibold text-neu-text focus:outline-none focus:ring-2 focus:ring-neu-gold/50 rounded-2xl"
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-neu-muted uppercase">
+                          Enter Marks out of 100 *
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={marksInput}
+                          disabled={!!existingEval}
+                          onChange={(e) => setMarksInput(e.target.value)}
+                          placeholder="e.g. 85"
+                          className="w-full neu-inset p-4 text-xl font-black text-neu-text placeholder:text-neu-muted/40 focus:outline-none focus:ring-2 focus:ring-neu-gold/50 rounded-2xl disabled:opacity-60 disabled:bg-gray-100"
+                          required
+                        />
+                      </div>
 
-                  <button
-                    type="submit"
-                    className="w-full neu-btn neu-btn-gold py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 shadow-md"
-                  >
-                    <Save className="w-5 h-5" />
-                    <span>SUBMIT {activeRound.name.toUpperCase()} MARKS</span>
-                  </button>
-                </form>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-neu-muted uppercase">
+                          Reviewer Feedback / Remarks (Optional)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={feedbackComments}
+                          disabled={!!existingEval}
+                          onChange={(e) => setFeedbackComments(e.target.value)}
+                          placeholder="Enter constructive evaluation feedback..."
+                          className="w-full neu-inset p-3.5 text-xs font-semibold text-neu-text focus:outline-none focus:ring-2 focus:ring-neu-gold/50 rounded-2xl disabled:opacity-60 disabled:bg-gray-100"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={!!existingEval}
+                        className={`w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 shadow-md ${
+                          existingEval
+                            ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300"
+                            : "neu-btn neu-btn-gold"
+                        }`}
+                      >
+                        {existingEval ? (
+                          <>
+                            <Lock className="w-5 h-5" />
+                            <span>MARKS SUBMITTED & LOCKED</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-5 h-5" />
+                            <span>SUBMIT {activeRound.name.toUpperCase()} MARKS</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  );
+                })()
               ) : (
                 <div className="neu-raised p-6 rounded-3xl bg-amber-50/70 border border-amber-300 text-amber-900 text-xs font-bold text-center">
                   Notice: No review round is currently active. Admin must open a round before marks can be entered.
