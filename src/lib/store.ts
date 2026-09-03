@@ -1,5 +1,7 @@
 import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewerEvaluation, ReviewRound, SiteLaunchState } from './types';
 import { SEEDED_TEAMS } from './seeded-teams';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { db } from './firebase';
 
 // Local storage keys
 const TEAMS_KEY = 'sdg_expo_teams';
@@ -221,4 +223,41 @@ export function getSiteLaunchState(): SiteLaunchState {
 export function saveSiteLaunchState(state: SiteLaunchState): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(LAUNCH_KEY, JSON.stringify(state));
+  try {
+    const launchDocRef = doc(db, 'config', 'site_launch');
+    setDoc(launchDocRef, state, { merge: true }).catch((err) => {
+      console.warn('Firestore launch sync warning:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore launch state error:', e);
+  }
+}
+
+export function subscribeGlobalLaunchState(onChange: (state: SiteLaunchState) => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  // First emit local state immediately
+  const local = getSiteLaunchState();
+  onChange(local);
+
+  try {
+    const launchDocRef = doc(db, 'config', 'site_launch');
+    const unsubscribe = onSnapshot(
+      launchDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data() as SiteLaunchState;
+          localStorage.setItem(LAUNCH_KEY, JSON.stringify(data));
+          onChange(data);
+        }
+      },
+      (err) => {
+        console.warn('Firestore launch listener warning:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (e) {
+    console.warn('Firestore launch listener error:', e);
+    return () => {};
+  }
 }

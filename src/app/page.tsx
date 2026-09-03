@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import CinematicIntro from "@/components/intro/CinematicIntro";
 import Footer from "@/components/layout/Footer";
-import { getSiteLaunchState } from "@/lib/store";
+import { getSiteLaunchState, subscribeGlobalLaunchState } from "@/lib/store";
 import { ALLOWED_SDGS, SiteLaunchState } from "@/lib/types";
 
 export default function LandingPage() {
@@ -33,10 +33,101 @@ export default function LandingPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    setLaunchState(getSiteLaunchState());
+    const unsubscribe = subscribeGlobalLaunchState((state) => {
+      setLaunchState(state);
+    });
+    return () => unsubscribe();
   }, []);
 
   if (!isMounted) return null;
+
+  // Render Standby Mode Gate if site has not been launched globally
+  if (!launchState.isLaunched) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F4F2EC] p-4 sm:p-8 text-center select-none relative overflow-hidden">
+        
+        {/* Ambient Lighting */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.95)_0%,rgba(244,242,236,0.95)_60%,rgba(235,232,222,1)_100%)] pointer-events-none" />
+
+        <div className="relative z-10 max-w-2xl w-full neu-raised-lg p-8 sm:p-12 rounded-3xl bg-[#FAF8F4] space-y-6 border-2 border-neu-gold/30 shadow-2xl">
+          
+          {/* Logos */}
+          <div className="flex items-center justify-center gap-6 mb-2">
+            <div className="relative w-20 h-20 sm:w-28 sm:h-28 neu-raised p-2.5 rounded-3xl bg-white shadow-xl">
+              <Image src="/wie-logo.jpeg" alt="IEEE WIE KARE" fill className="object-contain p-1" priority />
+            </div>
+            <span className="text-3xl font-black text-neu-gold">×</span>
+            <div className="relative w-20 h-20 sm:w-28 sm:h-28 neu-raised p-2.5 rounded-3xl bg-white shadow-xl">
+              <Image src="/ieee-cs-logo.jpeg" alt="IEEE CS KARE" fill className="object-contain p-1" priority />
+            </div>
+          </div>
+
+          <div>
+            <span className="neu-badge text-neu-gold font-black text-xs px-5 py-2 bg-white border border-neu-gold/30 uppercase tracking-widest">
+              KALASALINGAM ACADEMY OF RESEARCH AND EDUCATION
+            </span>
+            <h1 className="text-2xl sm:text-4xl font-black text-neu-text mt-4 tracking-tight">
+              SDG FOCUSED <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B89243]">PROJECT EXPO 2026</span>
+            </h1>
+            <p className="text-xs sm:text-sm font-black text-neu-green uppercase tracking-widest mt-1">
+              INNOVATE TODAY — IMPACT TOMORROW
+            </p>
+          </div>
+
+          {/* Standby Live Pulse Indicator */}
+          <div className="neu-inset p-5 rounded-2xl bg-[#ECE9E1] space-y-2 border border-neu-gold/30 shadow-inner">
+            <div className="flex items-center justify-center gap-2.5 text-amber-800">
+              <span className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
+              <span className="text-xs font-black uppercase tracking-widest">
+                {launchState.isReadyForLaunch ? "● READY FOR LAUNCH — AWAITING GRAND TRIGGER" : "● EVENT STANDBY MODE — OPENING SOON"}
+              </span>
+            </div>
+            <p className="text-xs font-semibold text-neu-text max-w-md mx-auto leading-relaxed">
+              {launchState.isReadyForLaunch
+                ? "Event coordinators have prepared the platform launch. The website will unlock automatically for all visitors in realtime as soon as launch is triggered!"
+                : "The event platform is currently in pre-launch standby mode. Please wait for the official inauguration by event coordinators."}
+            </p>
+          </div>
+
+          {/* Portal Navigation Shortcuts for Coordinators & Participants */}
+          <div className="pt-4 border-t border-neu-text/10 space-y-3">
+            <span className="text-[11px] font-bold text-neu-muted uppercase tracking-wider block">
+              PORTAL LOGIN ACCESS
+            </span>
+
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/login"
+                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-gold hover:text-neu-text rounded-xl shadow-sm"
+              >
+                Participant Login →
+              </Link>
+              <Link
+                href="/admin"
+                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-text hover:text-neu-gold rounded-xl shadow-sm"
+              >
+                Admin Control →
+              </Link>
+              <Link
+                href="/reviewer"
+                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-green hover:text-neu-text rounded-xl shadow-sm"
+              >
+                Reviewer Portal →
+              </Link>
+              <Link
+                href="/attend"
+                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-muted hover:text-neu-text rounded-xl shadow-sm"
+              >
+                Volunteer Scanner →
+              </Link>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F2EC]">
