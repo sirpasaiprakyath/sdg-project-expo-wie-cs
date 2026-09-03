@@ -79,6 +79,44 @@ export function getSessions(): AttendanceSession[] {
 export function saveSessions(sessions: AttendanceSession[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  try {
+    const sessionsDocRef = doc(db, 'config', 'attendance_sessions');
+    setDoc(sessionsDocRef, { sessions }).catch((err) => {
+      console.warn('Firestore saveSessions error:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore saveSessions error:', e);
+  }
+}
+
+export function subscribeSessions(onChange: (sessions: AttendanceSession[]) => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  const local = getSessions();
+  onChange(local);
+
+  try {
+    const sessionsDocRef = doc(db, 'config', 'attendance_sessions');
+    const unsubscribe = onSnapshot(
+      sessionsDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (Array.isArray(data?.sessions)) {
+            localStorage.setItem(SESSIONS_KEY, JSON.stringify(data.sessions));
+            onChange(data.sessions as AttendanceSession[]);
+          }
+        }
+      },
+      (err) => {
+        console.warn('Firestore sessions listener warning:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (e) {
+    console.warn('Firestore sessions listener error:', e);
+    return () => {};
+  }
 }
 
 export function deleteSession(sessionId: string): AttendanceSession[] {
@@ -115,6 +153,65 @@ export function getAttendanceRecords(): AttendanceRecord[] {
 export function saveAttendanceRecords(records: AttendanceRecord[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(records));
+  try {
+    const attDocRef = doc(db, 'config', 'attendance_records');
+    setDoc(attDocRef, { records }).catch((err) => {
+      console.warn('Firestore saveAttendanceRecords error:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore saveAttendanceRecords error:', e);
+  }
+}
+
+export function subscribeAttendanceRecords(onChange: (records: AttendanceRecord[]) => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  const local = getAttendanceRecords();
+  onChange(local);
+
+  try {
+    const attDocRef = doc(db, 'config', 'attendance_records');
+    const unsubscribe = onSnapshot(
+      attDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (Array.isArray(data?.records)) {
+            localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(data.records));
+            onChange(data.records as AttendanceRecord[]);
+          }
+        }
+      },
+      (err) => {
+        console.warn('Firestore attendance records listener warning:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (e) {
+    console.warn('Firestore attendance records listener error:', e);
+    return () => {};
+  }
+}
+
+export function clearAllAttendanceSessions(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(SESSIONS_KEY);
+  localStorage.removeItem(ATTENDANCE_KEY);
+  try {
+    const sessionsDocRef = doc(db, 'config', 'attendance_sessions');
+    setDoc(sessionsDocRef, { sessions: [] }).catch((err) => console.warn('Firestore clear error:', err));
+    const attDocRef = doc(db, 'config', 'attendance_records');
+    setDoc(attDocRef, { records: [] }).catch((err) => console.warn('Firestore clear error:', err));
+  } catch (e) {
+    console.warn('Error clearing attendance Firestore docs:', e);
+  }
+}
+
+// Auto-run one-time wipe to clear pre-existing local attendance sessions as requested by user
+const ATTENDANCE_WIPED_KEY = 'sdg_expo_attendance_wiped_v1';
+if (typeof window !== 'undefined' && !localStorage.getItem(ATTENDANCE_WIPED_KEY)) {
+  clearAllAttendanceSessions();
+  localStorage.setItem(ATTENDANCE_WIPED_KEY, 'true');
 }
 
 export function getProblemStatements(): Record<string, ProblemStatement> {
@@ -189,8 +286,7 @@ export function saveEvaluation(evaluation: ReviewerEvaluation): void {
 // Clear all demo data completely from local storage
 export function clearAllDemoData(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(SESSIONS_KEY);
-  localStorage.removeItem(ATTENDANCE_KEY);
+  clearAllAttendanceSessions();
   localStorage.removeItem(PROBLEMS_KEY);
   localStorage.removeItem(EVALS_KEY);
   localStorage.removeItem(LAUNCH_KEY);

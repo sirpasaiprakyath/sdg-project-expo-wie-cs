@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TeamQRModal from "@/components/qr/TeamQRModal";
-import { getInitialTeams, getSessions, getAttendanceRecords } from "@/lib/store";
+import { getInitialTeams, getSessions, getAttendanceRecords, subscribeSessions, subscribeAttendanceRecords } from "@/lib/store";
 import { Team, AttendanceSession, AttendanceRecord } from "@/lib/types";
 import { QrCode, CheckCircle2, XCircle, Clock, ShieldCheck } from "lucide-react";
 
@@ -16,7 +16,7 @@ export default function ParticipantAttendance() {
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
 
-  const loadAttendanceData = () => {
+  useEffect(() => {
     const rawSession = localStorage.getItem("sdg_user_session");
     if (!rawSession) {
       router.push("/login");
@@ -29,24 +29,20 @@ export default function ParticipantAttendance() {
     const currentTeam = teams.find((t) => t.id === sess.teamId) || teams[0];
     setTeam(currentTeam);
 
-    const activeSessions = getSessions();
-    setSessions(activeSessions);
+    const unsubSessions = subscribeSessions((activeSessions) => {
+      setSessions(activeSessions);
+    });
 
-    const allRecords = getAttendanceRecords();
-    if (currentTeam) {
-      setAttendanceRecords(allRecords.filter((r) => r.teamId === currentTeam.id));
-    }
-  };
+    const unsubRecords = subscribeAttendanceRecords((allRecords) => {
+      if (currentTeam) {
+        setAttendanceRecords(allRecords.filter((r) => r.teamId === currentTeam.id));
+      }
+    });
 
-  useEffect(() => {
-    loadAttendanceData();
-
-    // Auto-refresh interval (every 2 seconds) for live attendance scans
-    const interval = setInterval(() => {
-      loadAttendanceData();
-    }, 2000);
-
-    return () => clearInterval(interval);
+    return () => {
+      unsubSessions();
+      unsubRecords();
+    };
   }, [router]);
 
   if (!team || !sessionUser) {

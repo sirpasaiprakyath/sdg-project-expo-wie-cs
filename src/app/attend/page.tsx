@@ -20,13 +20,14 @@ import {
   VideoOff
 } from "lucide-react";
 import Link from "next/link";
-import { getInitialTeams, getSessions, getAttendanceRecords, saveAttendanceRecords, subscribeGlobalLaunchState } from "@/lib/store";
+import { getInitialTeams, getSessions, getAttendanceRecords, saveAttendanceRecords, subscribeSessions, subscribeAttendanceRecords, subscribeGlobalLaunchState } from "@/lib/store";
 import { Team, TeamMember, AttendanceSession, AttendanceRecord, SiteLaunchState } from "@/lib/types";
 
 export default function VolunteerAttendancePortal() {
   const router = useRouter();
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [activeSession, setActiveSession] = useState<AttendanceSession | null>(null);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   
   // Scanner / Search states
   const [scannedToken, setScannedToken] = useState<string | null>(null);
@@ -67,9 +68,19 @@ export default function VolunteerAttendancePortal() {
       setVolunteerAuth(false);
     }
 
-    const sessions = getSessions();
-    const active = sessions.find((s) => s.isActive) || null;
-    setActiveSession(active);
+    const unsubSessions = subscribeSessions((sessions) => {
+      const active = sessions.find((s) => s.isActive) || null;
+      setActiveSession(active);
+    });
+
+    const unsubRecords = subscribeAttendanceRecords((records) => {
+      setAttendanceRecords(records);
+    });
+
+    return () => {
+      unsubSessions();
+      unsubRecords();
+    };
   }, []);
 
   // Direct Live Camera Scan Initialization (No file uploads)

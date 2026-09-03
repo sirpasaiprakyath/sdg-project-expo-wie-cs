@@ -12,6 +12,9 @@ import {
   deleteSession,
   getAttendanceRecords, 
   saveAttendanceRecords,
+  subscribeSessions,
+  subscribeAttendanceRecords,
+  clearAllAttendanceSessions,
   getProblemStatements,
   getReviewRounds,
   saveReviewRounds,
@@ -92,18 +95,25 @@ export default function AdminDashboard() {
     } else {
       setAuthenticated(false);
     }
-    loadData();
-  }, []);
-
-  const loadData = () => {
     setTeams(getInitialTeams());
-    setSessions(getSessions());
-    setAttendanceRecords(getAttendanceRecords());
     setProblemStatements(getProblemStatements());
     setRounds(getReviewRounds());
     setEvaluations(getEvaluations());
     setLaunchState(getSiteLaunchState());
-  };
+
+    const unsubSessions = subscribeSessions((updatedSessions) => {
+      setSessions(updatedSessions);
+    });
+
+    const unsubRecords = subscribeAttendanceRecords((updatedRecords) => {
+      setAttendanceRecords(updatedRecords);
+    });
+
+    return () => {
+      unsubSessions();
+      unsubRecords();
+    };
+  }, []);
 
   const handleSetReadyForLaunch = (ready: boolean) => {
     const updated = { ...launchState, isReadyForLaunch: ready };
@@ -379,10 +389,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleWipeAllSessions = () => {
+    if (window.confirm("Are you sure you want to remove ALL attendance sessions and records across all devices?")) {
+      clearAllAttendanceSessions();
+    }
+  };
+
   // Clear All Demo Data Handler
   const handleClearDemoData = () => {
     clearAllDemoData();
-    loadData();
+    setTeams(getInitialTeams());
+    setProblemStatements(getProblemStatements());
+    setRounds(getReviewRounds());
+    setEvaluations(getEvaluations());
+    setLaunchState(getSiteLaunchState());
     setShowClearConfirm(false);
   };
 
@@ -865,7 +885,19 @@ export default function AdminDashboard() {
                   <h3 className="text-base font-extrabold text-neu-text">All Sessions History</h3>
                   <p className="text-xs text-neu-muted">Manage active and past event sessions</p>
                 </div>
-                <span className="neu-badge text-neu-gold font-bold text-xs">{sessions.length} Sessions</span>
+                <div className="flex items-center gap-2">
+                  <span className="neu-badge text-neu-gold font-bold text-xs">{sessions.length} Sessions</span>
+                  {sessions.length > 0 && (
+                    <button
+                      onClick={handleWipeAllSessions}
+                      className="neu-btn px-2.5 py-1 text-[11px] font-bold text-red-600 hover:text-red-800 flex items-center gap-1"
+                      title="Wipe All Sessions"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Wipe All Sessions</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">

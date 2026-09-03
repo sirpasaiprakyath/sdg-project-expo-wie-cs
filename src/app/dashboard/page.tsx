@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TeamQRModal from "@/components/qr/TeamQRModal";
-import { getInitialTeams, getProblemStatements, getAttendanceRecords, getSessions, getReviewRounds, getEvaluations, subscribeGlobalLaunchState } from "@/lib/store";
+import { getInitialTeams, getProblemStatements, getAttendanceRecords, getSessions, getReviewRounds, getEvaluations, subscribeSessions, subscribeAttendanceRecords, subscribeGlobalLaunchState } from "@/lib/store";
 import { Team, TeamMember, ProblemStatement, AttendanceRecord, ReviewRound, ReviewerEvaluation, AttendanceSession, SiteLaunchState } from "@/lib/types";
 import { 
   CheckCircle2, 
@@ -31,7 +31,7 @@ export default function ParticipantDashboard() {
   const [evaluations, setEvaluations] = useState<ReviewerEvaluation[]>([]);
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
 
-  const loadDashboardData = () => {
+  useEffect(() => {
     const rawSession = localStorage.getItem("sdg_user_session");
     if (!rawSession) {
       router.push("/login");
@@ -45,29 +45,28 @@ export default function ParticipantDashboard() {
     setTeam(currentTeam);
     setRounds(getReviewRounds());
     setEvaluations(getEvaluations());
-    setSessions(getSessions());
 
     if (currentTeam) {
       const psMap = getProblemStatements();
       if (psMap[currentTeam.id]) {
         setProblemStatement(psMap[currentTeam.id]);
       }
-
-      const allAttendance = getAttendanceRecords();
-      const teamRecords = allAttendance.filter((r) => r.teamId === currentTeam.id);
-      setAttendanceRecords(teamRecords);
     }
-  };
 
-  useEffect(() => {
-    loadDashboardData();
+    const unsubSessions = subscribeSessions((activeSessions) => {
+      setSessions(activeSessions);
+    });
 
-    // Live sync polling interval (every 2 seconds) so volunteer scans appear immediately
-    const interval = setInterval(() => {
-      loadDashboardData();
-    }, 2000);
+    const unsubRecords = subscribeAttendanceRecords((allAttendance) => {
+      if (currentTeam) {
+        setAttendanceRecords(allAttendance.filter((r) => r.teamId === currentTeam.id));
+      }
+    });
 
-    return () => clearInterval(interval);
+    return () => {
+      unsubSessions();
+      unsubRecords();
+    };
   }, [router]);
 
   const [launchState, setLaunchState] = useState<SiteLaunchState>({ isReadyForLaunch: false, isLaunched: false });
