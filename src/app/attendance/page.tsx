@@ -16,7 +16,7 @@ export default function ParticipantAttendance() {
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
 
-  useEffect(() => {
+  const loadAttendanceData = () => {
     const rawSession = localStorage.getItem("sdg_user_session");
     if (!rawSession) {
       router.push("/login");
@@ -36,6 +36,17 @@ export default function ParticipantAttendance() {
     if (currentTeam) {
       setAttendanceRecords(allRecords.filter((r) => r.teamId === currentTeam.id));
     }
+  };
+
+  useEffect(() => {
+    loadAttendanceData();
+
+    // Auto-refresh interval (every 2 seconds) for live attendance scans
+    const interval = setInterval(() => {
+      loadAttendanceData();
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, [router]);
 
   if (!team || !sessionUser) {

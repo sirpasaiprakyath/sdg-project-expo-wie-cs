@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TeamQRModal from "@/components/qr/TeamQRModal";
 import { getInitialTeams, getProblemStatements, getAttendanceRecords, getSessions, getReviewRounds, getEvaluations } from "@/lib/store";
-import { Team, TeamMember, ProblemStatement, AttendanceRecord, ReviewRound, ReviewerEvaluation } from "@/lib/types";
+import { Team, TeamMember, ProblemStatement, AttendanceRecord, ReviewRound, ReviewerEvaluation, AttendanceSession } from "@/lib/types";
 import { 
   CheckCircle2, 
   Clock, 
@@ -29,8 +29,9 @@ export default function ParticipantDashboard() {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [rounds, setRounds] = useState<ReviewRound[]>([]);
   const [evaluations, setEvaluations] = useState<ReviewerEvaluation[]>([]);
+  const [sessions, setSessions] = useState<AttendanceSession[]>([]);
 
-  useEffect(() => {
+  const loadDashboardData = () => {
     const rawSession = localStorage.getItem("sdg_user_session");
     if (!rawSession) {
       router.push("/login");
@@ -44,6 +45,7 @@ export default function ParticipantDashboard() {
     setTeam(currentTeam);
     setRounds(getReviewRounds());
     setEvaluations(getEvaluations());
+    setSessions(getSessions());
 
     if (currentTeam) {
       const psMap = getProblemStatements();
@@ -55,6 +57,17 @@ export default function ParticipantDashboard() {
       const teamRecords = allAttendance.filter((r) => r.teamId === currentTeam.id);
       setAttendanceRecords(teamRecords);
     }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+
+    // Live sync polling interval (every 2 seconds) so volunteer scans appear immediately
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, [router]);
 
   if (!team || !sessionUser) {
@@ -192,6 +205,76 @@ export default function ParticipantDashboard() {
                 })}
 
               </div>
+            </div>
+
+            {/* Realtime Attendance Status Card */}
+            <div className="neu-raised p-6 rounded-3xl bg-[#FAF8F4] space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 neu-inset rounded-xl text-neu-green bg-[#ECE9E1]">
+                    <QrCode className="w-5 h-5 text-neu-green" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-extrabold text-neu-text">LIVE ATTENDANCE STATUS</h2>
+                    <p className="text-xs text-neu-muted">Realtime member attendance records scanned by volunteers</p>
+                  </div>
+                </div>
+                <Link href="/attendance" className="neu-btn px-3 py-1.5 text-xs font-extrabold text-neu-green hover:text-neu-text">
+                  View Full Logs →
+                </Link>
+              </div>
+
+              {sessions.length === 0 ? (
+                <div className="neu-inset p-4 rounded-2xl bg-[#ECE9E1] text-center text-xs text-neu-muted font-bold">
+                  No attendance sessions created yet by admin.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sessions.map((sess) => {
+                    const memberRecords = attendanceRecords.filter((r) => r.sessionId === sess.id);
+                    const presentCount = memberRecords.filter((r) => r.status === "PRESENT").length;
+
+                    return (
+                      <div key={sess.id} className="neu-inset p-4 rounded-2xl bg-[#ECE9E1] space-y-3">
+                        <div className="flex items-center justify-between pb-2 border-b border-neu-text/10">
+                          <div>
+                            <span className="text-[10px] font-extrabold text-neu-gold uppercase tracking-wider block">
+                              {sess.isActive ? "● ACTIVE SESSION" : "CLOSED SESSION"}
+                            </span>
+                            <h4 className="text-sm font-extrabold text-neu-text">{sess.name}</h4>
+                          </div>
+
+                          <span className={`px-3 py-1 rounded-full text-xs font-black border ${
+                            presentCount > 0 ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-amber-100 text-amber-800 border-amber-300"
+                          }`}>
+                            {presentCount} / {team.members.length} Present
+                          </span>
+                        </div>
+
+                        {/* Member Badges */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {team.members.map((mem) => {
+                            const rec = memberRecords.find((r) => r.memberRegNo === mem.regNo);
+                            const isPresent = rec?.status === "PRESENT";
+                            const isAbsent = rec?.status === "ABSENT";
+
+                            return (
+                              <div key={mem.regNo} className="neu-raised-sm p-2.5 rounded-xl bg-white/90 flex items-center justify-between">
+                                <span className="text-xs font-bold text-neu-text">{mem.name} ({mem.regNo})</span>
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                  isPresent ? "bg-emerald-100 text-emerald-700" : isAbsent ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
+                                }`}>
+                                  {isPresent ? "PRESENT ✓" : isAbsent ? "ABSENT ✗" : "NOT MARKED"}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Team Members List */}
