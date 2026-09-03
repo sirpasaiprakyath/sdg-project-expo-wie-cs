@@ -75,12 +75,27 @@ export function getSessions(): AttendanceSession[] {
   return [];
 }
 
+const DELETED_SESSIONS_KEY = 'sdg_expo_deleted_sessions';
+
+export function getDeletedSessionIds(): string[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(DELETED_SESSIONS_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Error parsing deleted sessions', e);
+    }
+  }
+  return [];
+}
+
 export function saveSessions(sessions: AttendanceSession[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
   try {
     const sessionsDocRef = doc(db, 'config', 'attendance_sessions');
-    setDoc(sessionsDocRef, { sessions }).catch((err) => {
+    setDoc(sessionsDocRef, { sessions }, { merge: true }).catch((err) => {
       console.warn('Firestore saveSessions error:', err);
     });
   } catch (e) {
@@ -102,8 +117,35 @@ export function subscribeSessions(onChange: (sessions: AttendanceSession[]) => v
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (Array.isArray(data?.sessions)) {
-            localStorage.setItem(SESSIONS_KEY, JSON.stringify(data.sessions));
-            onChange(data.sessions as AttendanceSession[]);
+            const remoteSessions = data.sessions as AttendanceSession[];
+            const localSessions = getSessions();
+            const deletedIds = new Set(getDeletedSessionIds());
+
+            const sessionMap = new Map<string, AttendanceSession>();
+            // Remote sessions take priority (if not explicitly deleted locally)
+            remoteSessions.forEach((s) => {
+              if (!deletedIds.has(s.id)) {
+                sessionMap.set(s.id, s);
+              }
+            });
+            // Local sessions preserved if missing from remote snapshot
+            localSessions.forEach((s) => {
+              if (!deletedIds.has(s.id) && !sessionMap.has(s.id)) {
+                sessionMap.set(s.id, s);
+              }
+            });
+
+            const merged = Array.from(sessionMap.values()).sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+
+            localStorage.setItem(SESSIONS_KEY, JSON.stringify(merged));
+            onChange(merged);
+
+            // If local sessions had new sessions remote was missing, sync to Firestore
+            if (merged.length > remoteSessions.length) {
+              setDoc(sessionsDocRef, { sessions: merged }, { merge: true }).catch(() => {});
+            }
           }
         }
       },
@@ -119,6 +161,14 @@ export function subscribeSessions(onChange: (sessions: AttendanceSession[]) => v
 }
 
 export function deleteSession(sessionId: string): AttendanceSession[] {
+  // Mark as deleted so merger doesn't resurrect it
+  if (typeof window !== 'undefined') {
+    const deleted = getDeletedSessionIds();
+    if (!deleted.includes(sessionId)) {
+      localStorage.setItem(DELETED_SESSIONS_KEY, JSON.stringify([...deleted, sessionId]));
+    }
+  }
+
   const sessions = getSessions();
   const updatedSessions = sessions.filter((s) => s.id !== sessionId);
   saveSessions(updatedSessions);
@@ -154,7 +204,7 @@ export function saveAttendanceRecords(records: AttendanceRecord[]): void {
   localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(records));
   try {
     const attDocRef = doc(db, 'config', 'attendance_records');
-    setDoc(attDocRef, { records }).catch((err) => {
+    setDoc(attDocRef, { records }, { merge: true }).catch((err) => {
       console.warn('Firestore saveAttendanceRecords error:', err);
     });
   } catch (e) {
@@ -176,8 +226,24 @@ export function subscribeAttendanceRecords(onChange: (records: AttendanceRecord[
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (Array.isArray(data?.records)) {
-            localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(data.records));
-            onChange(data.records as AttendanceRecord[]);
+            const remoteRecords = data.records as AttendanceRecord[];
+            const localRecords = getAttendanceRecords();
+
+            const recordMap = new Map<string, AttendanceRecord>();
+            remoteRecords.forEach((r) => recordMap.set(r.id, r));
+            localRecords.forEach((r) => {
+              if (!recordMap.has(r.id)) {
+                recordMap.set(r.id, r);
+              }
+            });
+
+            const merged = Array.from(recordMap.values());
+            localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(merged));
+            onChange(merged);
+
+            if (merged.length > remoteRecords.length) {
+              setDoc(attDocRef, { records: merged }, { merge: true }).catch(() => {});
+            }
           }
         }
       },
@@ -196,6 +262,7 @@ export function clearAllAttendanceSessions(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(SESSIONS_KEY);
   localStorage.removeItem(ATTENDANCE_KEY);
+  localStorage.removeItem(DELETED_SESSIONS_KEY);
   try {
     const sessionsDocRef = doc(db, 'config', 'attendance_sessions');
     setDoc(sessionsDocRef, { sessions: [] }).catch((err) => console.warn('Firestore clear error:', err));
