@@ -19,11 +19,9 @@ import {
   getReviewRounds,
   saveReviewRounds,
   getEvaluations,
-  getSiteLaunchState,
-  saveSiteLaunchState,
   clearAllDemoData
 } from "@/lib/store";
-import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewRound, ReviewerEvaluation, SiteLaunchState, ALLOWED_SDGS } from "@/lib/types";
+import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewRound, ReviewerEvaluation, ALLOWED_SDGS } from "@/lib/types";
 import { 
   Users, 
   PlusCircle, 
@@ -85,9 +83,6 @@ export default function AdminDashboard() {
   // Clear demo confirmation state
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // Site Launch State
-  const [launchState, setLaunchState] = useState<SiteLaunchState>({ isReadyForLaunch: false, isLaunched: false });
-
   useEffect(() => {
     const rawSession = sessionStorage.getItem("sdg_admin_auth");
     if (rawSession === "true") {
@@ -95,11 +90,11 @@ export default function AdminDashboard() {
     } else {
       setAuthenticated(false);
     }
+
     setTeams(getInitialTeams());
     setProblemStatements(getProblemStatements());
     setRounds(getReviewRounds());
     setEvaluations(getEvaluations());
-    setLaunchState(getSiteLaunchState());
 
     const unsubSessions = subscribeSessions((updatedSessions) => {
       setSessions(updatedSessions);
@@ -114,29 +109,6 @@ export default function AdminDashboard() {
       unsubRecords();
     };
   }, []);
-
-  const handleSetReadyForLaunch = (ready: boolean) => {
-    const updated = { ...launchState, isReadyForLaunch: ready };
-    saveSiteLaunchState(updated);
-    setLaunchState(updated);
-  };
-
-  const handleTriggerLaunch = () => {
-    const updated = {
-      isReadyForLaunch: true,
-      isLaunched: true,
-      launchedAt: new Date().toISOString(),
-    };
-    saveSiteLaunchState(updated);
-    setLaunchState(updated);
-    router.push("/launch");
-  };
-
-  const handleResetLaunch = () => {
-    const updated = { isReadyForLaunch: false, isLaunched: false };
-    saveSiteLaunchState(updated);
-    setLaunchState(updated);
-  };
 
   // Create Review Round Handler (Enforces ONLY ONE active round at a time)
   const handleCreateRound = (e: React.FormEvent) => {
@@ -402,8 +374,6 @@ export default function AdminDashboard() {
     setProblemStatements(getProblemStatements());
     setRounds(getReviewRounds());
     setEvaluations(getEvaluations());
-    setLaunchState(getSiteLaunchState());
-    setShowClearConfirm(false);
   };
 
   // Filtered teams list
@@ -689,117 +659,6 @@ export default function AdminDashboard() {
         {/* TAB 1: SESSIONS & LIVE CONTROLS */}
         {adminTab === "sessions" && (
           <div className="space-y-8">
-            
-            {/* GRAND SITE LAUNCH CONTROLLER CARD */}
-            <div className="neu-raised p-6 sm:p-8 rounded-3xl bg-[#FAF8F4] border-2 border-neu-gold/40 space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 neu-inset rounded-2xl text-neu-gold bg-[#ECE9E1]">
-                    <Sparkles className="w-7 h-7 text-neu-gold" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold text-neu-gold uppercase tracking-widest block">
-                      ● EVENT SITE LAUNCH CONTROLLER
-                    </span>
-                    <h2 className="text-xl font-extrabold text-neu-text">Official Event Launch Trigger</h2>
-                    <p className="text-xs text-neu-muted mt-0.5">Control standby gate & activate live site launch</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1.5 rounded-full text-xs font-black ${
-                    launchState.isLaunched
-                      ? "bg-emerald-100 text-emerald-800"
-                      : launchState.isReadyForLaunch
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-gray-200 text-gray-700"
-                  }`}>
-                    {launchState.isLaunched
-                      ? "● EVENT LIVE & LAUNCHED"
-                      : launchState.isReadyForLaunch
-                      ? "● READY FOR LAUNCH"
-                      : "● LAUNCH STANDBY"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Step 1: Set Ready for Launch */}
-              {!launchState.isReadyForLaunch && !launchState.isLaunched && (
-                <div className="neu-inset p-5 rounded-2xl bg-[#ECE9E1] space-y-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-neu-gold shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-xs font-extrabold text-neu-text">Step 1: Set Site Ready for Launch</h4>
-                      <p className="text-xs text-neu-muted mt-0.5">
-                        Clicking this will prepare the event site launch gate and reveal the Big Launch Button.
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleSetReadyForLaunch(true)}
-                    className="neu-btn neu-btn-gold px-6 py-3 text-xs font-extrabold rounded-xl shadow-md"
-                  >
-                    ⚙️ SET SITE READY FOR LAUNCH
-                  </button>
-                </div>
-              )}
-
-              {/* Step 2: BIG LAUNCH BUTTON (When set ready for launch) */}
-              {launchState.isReadyForLaunch && !launchState.isLaunched && (
-                <div className="neu-raised p-8 rounded-3xl bg-gradient-to-b from-amber-50 to-amber-100/80 border-4 border-neu-gold text-center space-y-5">
-                  <div>
-                    <span className="neu-badge text-neu-gold font-black text-xs px-4 py-1.5 bg-white border border-neu-gold/40">
-                      ⚡ READY FOR GRAND LAUNCH
-                    </span>
-                    <h3 className="text-2xl font-black text-neu-text mt-2">
-                      Click Big Launch Button to Trigger Live Event
-                    </h3>
-                    <p className="text-xs text-neu-muted max-w-md mx-auto mt-1 font-semibold">
-                      Clicking this will trigger the cinematic intro animation on the landing page and unlock live site access!
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={handleTriggerLaunch}
-                    className="neu-btn bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-amber-950 px-10 py-5 rounded-3xl text-xl font-black shadow-2xl hover:scale-105 transition-transform flex items-center justify-center gap-3 mx-auto border-4 border-yellow-300"
-                  >
-                    <Sparkles className="w-8 h-8 fill-amber-950" />
-                    <span>🚀 LAUNCH EVENT NOW</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Step 3: Site Launched State & Reset Option */}
-              {launchState.isLaunched && (
-                <div className="neu-inset p-5 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col sm:flex-row items-center justify-between gap-4 text-emerald-950">
-                  <div>
-                    <h4 className="text-sm font-extrabold">✓ Event Site Live & Fully Launched</h4>
-                    <p className="text-xs text-emerald-700 mt-0.5 font-semibold">
-                      Launched on: {launchState.launchedAt ? new Date(launchState.launchedAt).toLocaleString() : "Just now"}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href="/launch"
-                      className="neu-btn px-4 py-2 text-xs font-extrabold text-neu-gold hover:text-neu-text rounded-xl flex items-center gap-1.5 shadow-sm"
-                    >
-                      <Sparkles className="w-4 h-4 text-neu-gold" />
-                      <span>Open Launch Page 🚀</span>
-                    </Link>
-
-                    <button
-                      onClick={handleResetLaunch}
-                      className="neu-btn px-4 py-2 text-xs font-bold text-red-600 hover:text-red-800 rounded-xl"
-                    >
-                      Reset Launch
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Create & Active Session Section */}

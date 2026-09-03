@@ -1,4 +1,4 @@
-import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewerEvaluation, ReviewRound, SiteLaunchState } from './types';
+import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewerEvaluation, ReviewRound } from './types';
 import { SEEDED_TEAMS } from './seeded-teams';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
@@ -9,7 +9,6 @@ const SESSIONS_KEY = 'sdg_expo_sessions';
 const ATTENDANCE_KEY = 'sdg_expo_attendance';
 const PROBLEMS_KEY = 'sdg_expo_problems';
 const EVALS_KEY = 'sdg_expo_evals';
-const LAUNCH_KEY = 'sdg_expo_site_launch';
 
 // Ensure 30 registered teams are cleanly loaded with 0 demo submissions
 export function getInitialTeams(): Team[] {
@@ -207,13 +206,6 @@ export function clearAllAttendanceSessions(): void {
   }
 }
 
-// Auto-run one-time wipe to clear pre-existing local attendance sessions as requested by user
-const ATTENDANCE_WIPED_KEY = 'sdg_expo_attendance_wiped_v1';
-if (typeof window !== 'undefined' && !localStorage.getItem(ATTENDANCE_WIPED_KEY)) {
-  clearAllAttendanceSessions();
-  localStorage.setItem(ATTENDANCE_WIPED_KEY, 'true');
-}
-
 export function getProblemStatements(): Record<string, ProblemStatement> {
   if (typeof window === 'undefined') return {};
   const stored = localStorage.getItem(PROBLEMS_KEY);
@@ -289,7 +281,6 @@ export function clearAllDemoData(): void {
   clearAllAttendanceSessions();
   localStorage.removeItem(PROBLEMS_KEY);
   localStorage.removeItem(EVALS_KEY);
-  localStorage.removeItem(LAUNCH_KEY);
   
   const cleanTeams = SEEDED_TEAMS.map((t) => ({
     ...t,
@@ -299,61 +290,4 @@ export function clearAllDemoData(): void {
     pptSubmittedAt: undefined,
   }));
   saveTeams(cleanTeams);
-}
-
-export function getSiteLaunchState(): SiteLaunchState {
-  if (typeof window === 'undefined') {
-    return { isReadyForLaunch: false, isLaunched: false };
-  }
-  const stored = localStorage.getItem(LAUNCH_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error('Error parsing site launch state', e);
-    }
-  }
-  return { isReadyForLaunch: false, isLaunched: false };
-}
-
-export function saveSiteLaunchState(state: SiteLaunchState): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(LAUNCH_KEY, JSON.stringify(state));
-  try {
-    const launchDocRef = doc(db, 'config', 'site_launch');
-    setDoc(launchDocRef, state, { merge: true }).catch((err) => {
-      console.warn('Firestore launch sync warning:', err);
-    });
-  } catch (e) {
-    console.warn('Firestore launch state error:', e);
-  }
-}
-
-export function subscribeGlobalLaunchState(onChange: (state: SiteLaunchState) => void) {
-  if (typeof window === 'undefined') return () => {};
-
-  // First emit local state immediately
-  const local = getSiteLaunchState();
-  onChange(local);
-
-  try {
-    const launchDocRef = doc(db, 'config', 'site_launch');
-    const unsubscribe = onSnapshot(
-      launchDocRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data() as SiteLaunchState;
-          localStorage.setItem(LAUNCH_KEY, JSON.stringify(data));
-          onChange(data);
-        }
-      },
-      (err) => {
-        console.warn('Firestore launch listener warning:', err);
-      }
-    );
-    return unsubscribe;
-  } catch (e) {
-    console.warn('Firestore launch listener error:', e);
-    return () => {};
-  }
 }

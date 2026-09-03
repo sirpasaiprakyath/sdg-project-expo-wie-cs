@@ -12,45 +12,13 @@ import {
 } from "lucide-react";
 import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithPopup } from "firebase/auth";
-import { getInitialTeams, subscribeGlobalLaunchState } from "@/lib/store";
-import { SiteLaunchState } from "@/lib/types";
+import { getInitialTeams } from "@/lib/store";
 import Footer from "@/components/layout/Footer";
 
 export default function LoginPage() {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [launchState, setLaunchState] = useState<SiteLaunchState>({ isReadyForLaunch: false, isLaunched: false });
-
-  useEffect(() => {
-    const unsubscribe = subscribeGlobalLaunchState((state) => {
-      setLaunchState(state);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  if (!launchState.isLaunched) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F4F2EC] p-4 text-center select-none">
-        <div className="max-w-md neu-raised-lg p-8 rounded-3xl bg-[#FAF8F4] space-y-6 border-2 border-neu-gold/30 shadow-xl">
-          <div className="flex justify-center">
-            <ShieldAlert className="w-12 h-12 text-neu-gold animate-bounce" />
-          </div>
-          <div>
-            <h2 className="text-xl font-extrabold text-neu-text">Participant Login Locked</h2>
-            <p className="text-xs text-neu-muted mt-2 font-medium">
-              The event site is currently in <strong>Pre-Launch Standby Mode</strong>. Participant login will open automatically as soon as event coordinators launch the platform!
-            </p>
-          </div>
-          <div className="pt-2">
-            <Link href="/" className="neu-btn px-4 py-2 text-xs font-bold text-neu-text">
-              ← Back to Standby Gate
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Handle Google Login for Participants strictly
   const handleGoogleSignIn = async () => {
