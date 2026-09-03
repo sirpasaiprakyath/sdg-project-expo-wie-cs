@@ -19,8 +19,9 @@ import {
   Video,
   VideoOff
 } from "lucide-react";
-import { getInitialTeams, getSessions, getAttendanceRecords, saveAttendanceRecords } from "@/lib/store";
-import { Team, TeamMember, AttendanceSession, AttendanceRecord } from "@/lib/types";
+import Link from "next/link";
+import { getInitialTeams, getSessions, getAttendanceRecords, saveAttendanceRecords, subscribeGlobalLaunchState } from "@/lib/store";
+import { Team, TeamMember, AttendanceSession, AttendanceRecord, SiteLaunchState } from "@/lib/types";
 
 export default function VolunteerAttendancePortal() {
   const router = useRouter();
@@ -45,6 +46,14 @@ export default function VolunteerAttendancePortal() {
   const [volunteerAuth, setVolunteerAuth] = useState<boolean>(false);
   const [passcode, setPasscode] = useState("");
   const [passcodeErr, setPasscodeErr] = useState<string | null>(null);
+  const [launchState, setLaunchState] = useState<SiteLaunchState>({ isReadyForLaunch: false, isLaunched: false });
+
+  useEffect(() => {
+    const unsubscribe = subscribeGlobalLaunchState((state) => {
+      setLaunchState(state);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const [isCameraOn, setIsCameraOn] = useState<boolean>(true);
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -282,6 +291,29 @@ export default function VolunteerAttendancePortal() {
     setIsDuplicate(false);
     setSearchQuery("");
   };
+
+  if (!launchState.isLaunched) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F4F2EC] p-4 text-center select-none">
+        <div className="max-w-md neu-raised-lg p-8 rounded-3xl bg-[#FAF8F4] space-y-6 border-2 border-neu-gold/30 shadow-xl">
+          <div className="flex justify-center">
+            <ShieldAlert className="w-12 h-12 text-neu-gold animate-bounce" />
+          </div>
+          <div>
+            <h2 className="text-xl font-extrabold text-neu-text">Volunteer Scanner Locked</h2>
+            <p className="text-xs text-neu-muted mt-2 font-medium">
+              The event site is currently in <strong>Pre-Launch Standby Mode</strong>. Volunteer scanner portal will unlock automatically as soon as event coordinators launch the platform!
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link href="/" className="neu-btn px-4 py-2 text-xs font-bold text-neu-text">
+              ← Back to Standby Gate
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!volunteerAuth) {
     return (

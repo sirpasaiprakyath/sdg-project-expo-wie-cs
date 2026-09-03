@@ -33,6 +33,9 @@ export default function LandingPage() {
 
   useEffect(() => {
     setIsMounted(true);
+    if (typeof window !== "undefined" && sessionStorage.getItem("sdg_intro_done") === "true") {
+      setShowIntro(false);
+    }
     const unsubscribe = subscribeGlobalLaunchState((state) => {
       setLaunchState(state);
     });
@@ -89,38 +92,14 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Portal Navigation Shortcuts for Coordinators & Participants */}
-          <div className="pt-4 border-t border-neu-text/10 space-y-3">
-            <span className="text-[11px] font-bold text-neu-muted uppercase tracking-wider block">
-              PORTAL LOGIN ACCESS
-            </span>
-
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/login"
-                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-gold hover:text-neu-text rounded-xl shadow-sm"
-              >
-                Participant Login →
-              </Link>
-              <Link
-                href="/admin"
-                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-text hover:text-neu-gold rounded-xl shadow-sm"
-              >
-                Admin Control →
-              </Link>
-              <Link
-                href="/reviewer"
-                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-green hover:text-neu-text rounded-xl shadow-sm"
-              >
-                Reviewer Portal →
-              </Link>
-              <Link
-                href="/attend"
-                className="neu-btn px-4 py-2.5 text-xs font-extrabold text-neu-muted hover:text-neu-text rounded-xl shadow-sm"
-              >
-                Volunteer Scanner →
-              </Link>
-            </div>
+          {/* Admin Login Link Only */}
+          <div className="pt-4 border-t border-neu-text/10 flex justify-center">
+            <Link
+              href="/admin"
+              className="text-xs font-bold text-neu-muted hover:text-neu-gold transition-colors underline"
+            >
+              Admin Access Control Portal →
+            </Link>
           </div>
 
         </div>

@@ -14,17 +14,19 @@ export default function DedicatedLaunchPage() {
   const [isLaunching, setIsLaunching] = useState(false);
 
   const handleLaunchNow = () => {
-    // Save site launched state
+    // Save site launched state globally
     saveSiteLaunchState({
       isReadyForLaunch: true,
       isLaunched: true,
       launchedAt: new Date().toISOString(),
     });
+    sessionStorage.setItem("sdg_intro_done", "true");
     // Trigger cinematic intro
     setIsLaunching(true);
   };
 
   const handleIntroComplete = () => {
+    sessionStorage.setItem("sdg_intro_done", "true");
     router.push("/");
   };
 
