@@ -165,3 +165,9 @@ export interface AuthUser {
   teamId?: string;
   memberInfo?: TeamMember;
 }
+
+export interface SiteLaunchState {
+  isReadyForLaunch: boolean;
+  isLaunched: boolean;
+  launchedAt?: string;
+}

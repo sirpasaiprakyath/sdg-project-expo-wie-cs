@@ -23,17 +23,76 @@ import {
 } from "lucide-react";
 import CinematicIntro from "@/components/intro/CinematicIntro";
 import Footer from "@/components/layout/Footer";
-import { ALLOWED_SDGS } from "@/lib/types";
+import { getSiteLaunchState } from "@/lib/store";
+import { ALLOWED_SDGS, SiteLaunchState } from "@/lib/types";
 
 export default function LandingPage() {
   const [showIntro, setShowIntro] = useState<boolean>(true);
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [launchState, setLaunchState] = useState<SiteLaunchState>({ isReadyForLaunch: false, isLaunched: false });
 
   useEffect(() => {
     setIsMounted(true);
+    setLaunchState(getSiteLaunchState());
   }, []);
 
   if (!isMounted) return null;
+
+  // Render Standby Gate if not launched by Admin
+  if (!launchState.isLaunched) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F4F2EC] p-4 text-center select-none relative overflow-hidden">
+        <div className="max-w-xl neu-raised-lg p-8 sm:p-12 rounded-3xl bg-[#FAF8F4] space-y-6 relative border-2 border-neu-gold/30">
+          
+          {/* Logos */}
+          <div className="flex items-center justify-center gap-6 mb-4">
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 neu-raised p-2 rounded-2xl bg-white shadow-md">
+              <Image src="/wie-logo.jpeg" alt="IEEE WIE" fill className="object-contain p-1" priority />
+            </div>
+            <span className="text-2xl font-black text-neu-gold">×</span>
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 neu-raised p-2 rounded-2xl bg-white shadow-md">
+              <Image src="/ieee-cs-logo.jpeg" alt="IEEE CS" fill className="object-contain p-1" priority />
+            </div>
+          </div>
+
+          <div>
+            <span className="neu-badge text-neu-gold font-black text-xs px-4 py-1.5 bg-white border border-neu-gold/30">
+              OFFICIAL EVENT LAUNCH GATE
+            </span>
+            <h1 className="text-2xl sm:text-4xl font-black text-neu-text mt-3">
+              SDG FOCUSED <span className="text-neu-gold">PROJECT EXPO 2026</span>
+            </h1>
+            <p className="text-xs sm:text-sm font-semibold text-neu-muted mt-2">
+              Kalasalingam Academy of Research and Education
+            </p>
+          </div>
+
+          <div className="neu-inset p-5 rounded-2xl bg-[#ECE9E1] space-y-2 border border-neu-gold/20">
+            <div className="flex items-center justify-center gap-2 text-amber-800">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+              <span className="text-xs font-black uppercase tracking-widest">
+                {launchState.isReadyForLaunch ? "READY FOR LAUNCH — AWAITING TRIGGER..." : "STANDBY MODE — LAUNCHING SOON"}
+              </span>
+            </div>
+            <p className="text-xs font-medium text-neu-text leading-relaxed">
+              {launchState.isReadyForLaunch
+                ? "The event is set ready for launch! Admin is about to trigger the official live launch."
+                : "The event platform is currently in pre-launch standby. Please wait for the event coordinators to trigger the live launch."}
+            </p>
+          </div>
+
+          <div className="pt-2 flex justify-center">
+            <Link
+              href="/admin"
+              className="text-xs font-bold text-neu-muted hover:text-neu-gold transition-colors"
+            >
+              Admin Login / Access Control Portal →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F2EC]">

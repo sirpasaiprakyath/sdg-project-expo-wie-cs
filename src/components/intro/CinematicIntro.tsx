@@ -12,14 +12,14 @@ export default function CinematicIntro({ onComplete }: CinematicIntroProps) {
   const [stage, setStage] = useState<number>(0);
 
   useEffect(() => {
-    // Ultra-Fast & Buttery Smooth Timeline (~3.6s)
-    const t0 = setTimeout(() => setStage(1), 100);   // Logos glide in with 3D Glassmorphism
-    const t1 = setTimeout(() => setStage(2), 1200);  // Champagne light glow connection & collaboration badge
-    const t2 = setTimeout(() => setStage(3), 2200);  // Metallic Shimmer Title reveal
+    // Grand & Elegant Slow Timeline (~7.0s)
+    const t0 = setTimeout(() => setStage(1), 300);   // Logos glide in smoothly
+    const t1 = setTimeout(() => setStage(2), 2200);  // Champagne light connection & collaboration badge
+    const t2 = setTimeout(() => setStage(3), 4500);  // Metallic Shimmer Title reveal
     const t3 = setTimeout(() => {
       sessionStorage.setItem("sdg_intro_done", "true");
       onComplete();
-    }, 3600);
+    }, 7000);
 
     return () => {
       clearTimeout(t0);

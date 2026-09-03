@@ -1,4 +1,4 @@
-import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewerEvaluation, ReviewRound } from './types';
+import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewerEvaluation, ReviewRound, SiteLaunchState } from './types';
 import { SEEDED_TEAMS } from './seeded-teams';
 
 // Local storage keys
@@ -7,6 +7,7 @@ const SESSIONS_KEY = 'sdg_expo_sessions';
 const ATTENDANCE_KEY = 'sdg_expo_attendance';
 const PROBLEMS_KEY = 'sdg_expo_problems';
 const EVALS_KEY = 'sdg_expo_evals';
+const LAUNCH_KEY = 'sdg_expo_site_launch';
 
 // Ensure 30 registered teams are cleanly loaded with 0 demo submissions
 export function getInitialTeams(): Team[] {
@@ -190,6 +191,7 @@ export function clearAllDemoData(): void {
   localStorage.removeItem(ATTENDANCE_KEY);
   localStorage.removeItem(PROBLEMS_KEY);
   localStorage.removeItem(EVALS_KEY);
+  localStorage.removeItem(LAUNCH_KEY);
   
   const cleanTeams = SEEDED_TEAMS.map((t) => ({
     ...t,
@@ -199,4 +201,24 @@ export function clearAllDemoData(): void {
     pptSubmittedAt: undefined,
   }));
   saveTeams(cleanTeams);
+}
+
+export function getSiteLaunchState(): SiteLaunchState {
+  if (typeof window === 'undefined') {
+    return { isReadyForLaunch: false, isLaunched: false };
+  }
+  const stored = localStorage.getItem(LAUNCH_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Error parsing site launch state', e);
+    }
+  }
+  return { isReadyForLaunch: false, isLaunched: false };
+}
+
+export function saveSiteLaunchState(state: SiteLaunchState): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(LAUNCH_KEY, JSON.stringify(state));
 }
