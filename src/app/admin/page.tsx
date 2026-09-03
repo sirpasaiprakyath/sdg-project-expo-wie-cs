@@ -119,6 +119,7 @@ export default function AdminDashboard() {
     };
     saveSiteLaunchState(updated);
     setLaunchState(updated);
+    router.push("/launch");
   };
 
   const handleResetLaunch = () => {
@@ -759,12 +760,22 @@ export default function AdminDashboard() {
                     </p>
                   </div>
 
-                  <button
-                    onClick={handleResetLaunch}
-                    className="neu-btn px-4 py-2 text-xs font-bold text-red-600 hover:text-red-800 rounded-xl"
-                  >
-                    Reset Launch State
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href="/launch"
+                      className="neu-btn px-4 py-2 text-xs font-extrabold text-neu-gold hover:text-neu-text rounded-xl flex items-center gap-1.5 shadow-sm"
+                    >
+                      <Sparkles className="w-4 h-4 text-neu-gold" />
+                      <span>Open Launch Page 🚀</span>
+                    </Link>
+
+                    <button
+                      onClick={handleResetLaunch}
+                      className="neu-btn px-4 py-2 text-xs font-bold text-red-600 hover:text-red-800 rounded-xl"
+                    >
+                      Reset Launch
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
