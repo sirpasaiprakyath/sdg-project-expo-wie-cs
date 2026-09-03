@@ -81,12 +81,11 @@ export default function AdminDashboard() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
-    const rawSession = localStorage.getItem("sdg_user_session");
-    if (rawSession) {
-      const sess = JSON.parse(rawSession);
-      if (sess.role === "admin") {
-        setAuthenticated(true);
-      }
+    const rawSession = sessionStorage.getItem("sdg_admin_auth");
+    if (rawSession === "true") {
+      setAuthenticated(true);
+    } else {
+      setAuthenticated(false);
     }
     loadData();
   }, []);
@@ -231,12 +230,7 @@ export default function AdminDashboard() {
   const handleAdminAuth = (e: React.FormEvent) => {
     e.preventDefault();
     if (passcode === "wie143cs") {
-      const sessionData = {
-        role: "admin",
-        userEmail: "admin@klu.ac.in",
-        userName: "Admin Coordinator",
-      };
-      localStorage.setItem("sdg_user_session", JSON.stringify(sessionData));
+      sessionStorage.setItem("sdg_admin_auth", "true");
       setAuthenticated(true);
       setPasscodeErr(null);
     } else {

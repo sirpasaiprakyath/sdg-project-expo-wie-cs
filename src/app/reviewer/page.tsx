@@ -48,13 +48,16 @@ export default function ReviewerWorkspace() {
   const [passcodeErr, setPasscodeErr] = useState<string | null>(null);
 
   useEffect(() => {
-    const rawSession = localStorage.getItem("sdg_user_session");
-    if (rawSession) {
-      const sess = JSON.parse(rawSession);
-      if (sess.role === "reviewer" || sess.role === "admin") {
-        setSessionUser(sess);
-        setReviewerAuth(true);
-      }
+    const rawSession = sessionStorage.getItem("sdg_reviewer_auth");
+    if (rawSession === "true") {
+      setReviewerAuth(true);
+      setSessionUser({
+        role: "reviewer",
+        userEmail: "reviewer@klu.ac.in",
+        userName: "Faculty Reviewer",
+      });
+    } else {
+      setReviewerAuth(false);
     }
 
     const loadedTeams = getInitialTeams();
@@ -128,7 +131,7 @@ export default function ReviewerWorkspace() {
         userEmail: "reviewer@klu.ac.in",
         userName: "Faculty Reviewer",
       };
-      localStorage.setItem("sdg_user_session", JSON.stringify(sessionData));
+      sessionStorage.setItem("sdg_reviewer_auth", "true");
       setSessionUser(sessionData);
       setReviewerAuth(true);
       setPasscodeErr(null);

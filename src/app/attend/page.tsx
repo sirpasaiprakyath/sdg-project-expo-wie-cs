@@ -50,13 +50,12 @@ export default function VolunteerAttendancePortal() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    const rawSession = localStorage.getItem("sdg_user_session");
-    if (rawSession) {
-      const sess = JSON.parse(rawSession);
-      if (sess.role === "volunteer" || sess.role === "admin") {
-        setSessionUser(sess);
-        setVolunteerAuth(true);
-      }
+    const rawSession = sessionStorage.getItem("sdg_volunteer_auth");
+    if (rawSession === "true") {
+      setVolunteerAuth(true);
+      setSessionUser({ role: "volunteer", userName: "Volunteer Scanner" });
+    } else {
+      setVolunteerAuth(false);
     }
 
     const sessions = getSessions();
@@ -159,7 +158,7 @@ export default function VolunteerAttendancePortal() {
         userEmail: "volunteer@klu.ac.in",
         userName: "Event Volunteer",
       };
-      localStorage.setItem("sdg_user_session", JSON.stringify(sessionData));
+      sessionStorage.setItem("sdg_volunteer_auth", "true");
       setSessionUser(sessionData);
       setVolunteerAuth(true);
       setPasscodeErr(null);
