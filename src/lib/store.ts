@@ -10,31 +10,16 @@ const ATTENDANCE_KEY = 'sdg_expo_attendance';
 const PROBLEMS_KEY = 'sdg_expo_problems';
 const EVALS_KEY = 'sdg_expo_evals';
 
-// Ensure 30 registered teams are cleanly loaded with 0 demo submissions
+// Ensure 30 registered teams are cleanly loaded
 export function getInitialTeams(): Team[] {
   if (typeof window === 'undefined') return SEEDED_TEAMS;
   
-  // Always start with clean 30 teams with zero demo submissions
   const stored = localStorage.getItem(TEAMS_KEY);
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Enforce zero demo data for SDG-001 if it was previously seeded
-        const cleaned = parsed.map((t) => {
-          if (t.id === 'SDG-001') {
-            return {
-              ...t,
-              problemStatementSubmitted: false,
-              pptSubmitted: false,
-              pptUrl: '',
-              pptSubmittedAt: undefined,
-            };
-          }
-          return t;
-        });
-        saveTeams(cleaned);
-        return cleaned;
+        return parsed;
       }
     } catch (e) {
       console.error('Error parsing stored teams', e);
@@ -49,10 +34,7 @@ export function getInitialTeams(): Team[] {
     pptUrl: '',
     pptSubmittedAt: undefined,
   }));
-  saveTeams(cleanTeams);
-
-  // Clear demo problem statements
-  localStorage.removeItem(PROBLEMS_KEY);
+  localStorage.setItem(TEAMS_KEY, JSON.stringify(cleanTeams));
 
   return cleanTeams;
 }
@@ -60,6 +42,67 @@ export function getInitialTeams(): Team[] {
 export function saveTeams(teams: Team[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+  try {
+    const teamsDocRef = doc(db, 'config', 'teams');
+    setDoc(teamsDocRef, { teams }, { merge: true }).catch((err) => {
+      console.warn('Firestore saveTeams error:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore saveTeams error:', e);
+  }
+}
+
+export function subscribeTeams(onChange: (teams: Team[]) => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  const local = getInitialTeams();
+  onChange(local);
+
+  try {
+    const teamsDocRef = doc(db, 'config', 'teams');
+    const unsubscribe = onSnapshot(
+      teamsDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (Array.isArray(data?.teams) && data.teams.length > 0) {
+            const remoteTeams = data.teams as Team[];
+            const localTeams = getInitialTeams();
+
+            const teamMap = new Map<string, Team>();
+            remoteTeams.forEach((t) => teamMap.set(t.id, t));
+
+            localTeams.forEach((lt) => {
+              const rt = teamMap.get(lt.id);
+              if (rt) {
+                const mergedTeam: Team = {
+                  ...rt,
+                  problemStatementSubmitted: rt.problemStatementSubmitted || lt.problemStatementSubmitted,
+                  pptSubmitted: rt.pptSubmitted || lt.pptSubmitted,
+                  pptUrl: rt.pptUrl || lt.pptUrl,
+                  pptSubmittedAt: rt.pptSubmittedAt || lt.pptSubmittedAt,
+                };
+                teamMap.set(lt.id, mergedTeam);
+              } else {
+                teamMap.set(lt.id, lt);
+              }
+            });
+
+            const merged = Array.from(teamMap.values());
+            localStorage.setItem(TEAMS_KEY, JSON.stringify(merged));
+            onChange(merged);
+          }
+        }
+      },
+      (err) => {
+        console.warn('Firestore teams listener warning:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (e) {
+    console.warn('Firestore teams listener error:', e);
+    return () => {};
+  }
 }
 
 export function getSessions(): AttendanceSession[] {
@@ -291,6 +334,66 @@ export function saveProblemStatement(ps: ProblemStatement): void {
   existing[ps.teamId] = ps;
   if (typeof window !== 'undefined') {
     localStorage.setItem(PROBLEMS_KEY, JSON.stringify(existing));
+  }
+
+  // Update team status to problemStatementSubmitted = true
+  const teams = getInitialTeams();
+  const updatedTeams = teams.map((t) => {
+    if (t.id === ps.teamId) {
+      return {
+        ...t,
+        problemStatementSubmitted: true,
+      };
+    }
+    return t;
+  });
+  saveTeams(updatedTeams);
+
+  try {
+    const psDocRef = doc(db, 'config', 'problem_statements');
+    setDoc(psDocRef, { statements: existing }, { merge: true }).catch((err) => {
+      console.warn('Firestore saveProblemStatement error:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore saveProblemStatement error:', e);
+  }
+}
+
+export function subscribeProblemStatements(onChange: (statements: Record<string, ProblemStatement>) => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  const local = getProblemStatements();
+  onChange(local);
+
+  try {
+    const psDocRef = doc(db, 'config', 'problem_statements');
+    const unsubscribe = onSnapshot(
+      psDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data?.statements && typeof data.statements === 'object') {
+            const remoteMap = data.statements as Record<string, ProblemStatement>;
+            const localMap = getProblemStatements();
+
+            const mergedMap = { ...localMap, ...remoteMap };
+            localStorage.setItem(PROBLEMS_KEY, JSON.stringify(mergedMap));
+            onChange(mergedMap);
+
+            if (Object.keys(mergedMap).length > Object.keys(remoteMap).length) {
+              setDoc(psDocRef, { statements: mergedMap }, { merge: true }).catch(() => {});
+            }
+          }
+        }
+      },
+      (err) => {
+        console.warn('Firestore problem_statements listener warning:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (e) {
+    console.warn('Firestore problem_statements listener error:', e);
+    return () => {};
   }
 }
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TeamQRModal from "@/components/qr/TeamQRModal";
-import { getInitialTeams, getProblemStatements, getAttendanceRecords, getSessions, getReviewRounds, getEvaluations, subscribeSessions, subscribeAttendanceRecords } from "@/lib/store";
+import { getInitialTeams, getProblemStatements, getAttendanceRecords, getSessions, getReviewRounds, getEvaluations, subscribeSessions, subscribeAttendanceRecords, subscribeTeams, subscribeProblemStatements } from "@/lib/store";
 import { Team, TeamMember, ProblemStatement, AttendanceRecord, ReviewRound, ReviewerEvaluation, AttendanceSession } from "@/lib/types";
 import { 
   CheckCircle2, 
@@ -63,9 +63,24 @@ export default function ParticipantDashboard() {
       }
     });
 
+    const unsubTeams = subscribeTeams((updatedTeams) => {
+      const found = updatedTeams.find((t) => t.id === sess.teamId);
+      if (found) {
+        setTeam(found);
+      }
+    });
+
+    const unsubPS = subscribeProblemStatements((allPS) => {
+      if (sess.teamId && allPS[sess.teamId]) {
+        setProblemStatement(allPS[sess.teamId]);
+      }
+    });
+
     return () => {
       unsubSessions();
       unsubRecords();
+      unsubTeams();
+      unsubPS();
     };
   }, [router]);
 

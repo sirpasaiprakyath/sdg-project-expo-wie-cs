@@ -146,8 +146,14 @@ export default function ProblemStatementForm() {
     };
 
     saveProblemStatement(updatedPS);
+    setTeam({
+      ...team,
+      problemStatementSubmitted: true,
+    });
     setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 4000);
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 1500);
   };
 
   if (!team || !sessionUser) {

@@ -14,6 +14,8 @@ import {
   saveAttendanceRecords,
   subscribeSessions,
   subscribeAttendanceRecords,
+  subscribeTeams,
+  subscribeProblemStatements,
   clearAllAttendanceSessions,
   getProblemStatements,
   getReviewRounds,
@@ -104,9 +106,19 @@ export default function AdminDashboard() {
       setAttendanceRecords(updatedRecords);
     });
 
+    const unsubTeams = subscribeTeams((updatedTeams) => {
+      setTeams(updatedTeams);
+    });
+
+    const unsubPS = subscribeProblemStatements((updatedPS) => {
+      setProblemStatements(updatedPS);
+    });
+
     return () => {
       unsubSessions();
       unsubRecords();
+      unsubTeams();
+      unsubPS();
     };
   }, []);
 
