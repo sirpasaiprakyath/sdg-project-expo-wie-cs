@@ -417,12 +417,35 @@ export function saveReviewRounds(rounds: ReviewRound[]): void {
   localStorage.setItem(ROUNDS_KEY, JSON.stringify(rounds));
   try {
     const roundsDocRef = doc(db, 'config', 'review_rounds');
-    setDoc(roundsDocRef, { rounds }, { merge: true }).catch((err) => {
+    setDoc(roundsDocRef, { rounds }).catch((err) => {
       console.warn('Firestore saveReviewRounds error:', err);
     });
   } catch (e) {
     console.warn('Firestore saveReviewRounds error:', e);
   }
+}
+
+export function deleteReviewRound(roundId: string): ReviewRound[] {
+  const currentRounds = getReviewRounds();
+  const updatedRounds = currentRounds.filter((r) => r.id !== roundId);
+  saveReviewRounds(updatedRounds);
+
+  // Clean up evaluations for this round
+  const currentEvals = getEvaluations();
+  const updatedEvals = currentEvals.filter((e) => e.roundId !== roundId);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(EVALS_KEY, JSON.stringify(updatedEvals));
+  }
+  try {
+    const evalsDocRef = doc(db, 'config', 'evaluations');
+    setDoc(evalsDocRef, { evaluations: updatedEvals }).catch((err) => {
+      console.warn('Firestore deleteReviewRound evals error:', err);
+    });
+  } catch (e) {
+    console.warn('Firestore deleteReviewRound evals error:', e);
+  }
+
+  return updatedRounds;
 }
 
 export function subscribeReviewRounds(onChange: (rounds: ReviewRound[]) => void) {

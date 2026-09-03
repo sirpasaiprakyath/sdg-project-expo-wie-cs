@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { getInitialTeams, getProblemStatements, getReviewRounds, getEvaluations, saveEvaluation } from "@/lib/store";
+import { getInitialTeams, getProblemStatements, getReviewRounds, getEvaluations, saveEvaluation, subscribeReviewRounds, subscribeEvaluations, subscribeTeams, subscribeProblemStatements } from "@/lib/store";
 import { Team, ProblemStatement, ReviewRound, ReviewerEvaluation, ALLOWED_SDGS } from "@/lib/types";
 import { 
   FileText, 
@@ -73,9 +73,38 @@ export default function ReviewerWorkspace() {
     if (loadedTeams.length > 0 && (!selectedTeamId || selectedTeamId === "SDG-030" || selectedTeamId === "SGD-030")) {
       setSelectedTeamId(loadedTeams[0].id);
     }
+
+    const unsubRounds = subscribeReviewRounds((updatedRounds) => {
+      setRounds(updatedRounds);
+    });
+
+    const unsubEvals = subscribeEvaluations((updatedEvals) => {
+      setEvaluations(updatedEvals);
+    });
+
+    const unsubTeams = subscribeTeams((updatedTeams) => {
+      setTeams(updatedTeams.filter((t) => t.id !== "SDG-030" && t.id !== "SGD-030"));
+    });
+
+    const unsubPS = subscribeProblemStatements((updatedPS) => {
+      setProblemStatements(updatedPS);
+    });
+
+    return () => {
+      unsubRounds();
+      unsubEvals();
+      unsubTeams();
+      unsubPS();
+    };
   }, [selectedTeamId]);
 
-  const activeRound = rounds.find((r) => r.isActive) || null;
+  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
+
+  const activeRound =
+    rounds.find((r) => r.id === selectedRoundId) ||
+    rounds.find((r) => r.isActive) ||
+    rounds[0] ||
+    null;
 
   // Sync existing evaluation for active round when team changes
   useEffect(() => {

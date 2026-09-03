@@ -19,6 +19,7 @@ import {
   subscribeReviewRounds,
   subscribeEvaluations,
   saveEvaluation,
+  deleteReviewRound,
   clearAllAttendanceSessions,
   getProblemStatements,
   getReviewRounds,
@@ -239,6 +240,15 @@ export default function AdminDashboard() {
 
     saveReviewRounds(updated);
     setRounds(updated);
+  };
+
+  // Delete Review Round Handler
+  const handleDeleteRound = (roundId: string) => {
+    if (window.confirm("Are you sure you want to delete this review round and all associated evaluation marks across all teams?")) {
+      const updated = deleteReviewRound(roundId);
+      setRounds(updated);
+      setEvaluations(getEvaluations());
+    }
   };
 
   // Leaderboard Calculation
@@ -1127,6 +1137,13 @@ export default function AdminDashboard() {
                             <span>Reopen</span>
                           </button>
                         )}
+                        <button
+                          onClick={() => handleDeleteRound(r.id)}
+                          className="neu-btn p-2 text-red-600 hover:text-red-800 rounded-xl"
+                          title="Delete Review Round"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   ))
