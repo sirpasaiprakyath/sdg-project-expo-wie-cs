@@ -21,7 +21,7 @@ import {
   getEvaluations,
   clearAllDemoData
 } from "@/lib/store";
-import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewRound, ReviewerEvaluation, ALLOWED_SDGS } from "@/lib/types";
+import { Team, TeamMember, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewRound, ReviewerEvaluation, ALLOWED_SDGS } from "@/lib/types";
 import { 
   Users, 
   PlusCircle, 
@@ -410,6 +410,97 @@ export default function AdminDashboard() {
     }));
   };
 
+  // Admin Manual Attendance Toggle Handler (Allows changing ABSENT <-> PRESENT)
+  const handleAdminToggleAttendance = (
+    sessionId: string,
+    sessionName: string,
+    teamId: string,
+    teamName: string,
+    memberRegNo: string,
+    memberName: string,
+    currentStatus?: "PRESENT" | "ABSENT"
+  ) => {
+    const allRecords = getAttendanceRecords();
+    const newStatus = currentStatus === "PRESENT" ? "ABSENT" : "PRESENT";
+    const now = new Date().toISOString();
+
+    const existingIdx = allRecords.findIndex(
+      (r) => r.sessionId === sessionId && r.teamId === teamId && r.memberRegNo === memberRegNo
+    );
+
+    let updatedRecords: AttendanceRecord[];
+
+    if (existingIdx !== -1) {
+      updatedRecords = [...allRecords];
+      updatedRecords[existingIdx] = {
+        ...updatedRecords[existingIdx],
+        status: newStatus,
+        markedAt: now,
+        volunteerId: "Admin (Manual Override)",
+      };
+    } else {
+      const newRecord: AttendanceRecord = {
+        id: `att_admin_${sessionId}_${teamId}_${memberRegNo}_${Date.now()}`,
+        sessionId,
+        sessionName,
+        teamId,
+        teamName,
+        memberRegNo,
+        memberName,
+        status: newStatus,
+        markedAt: now,
+        volunteerId: "Admin (Manual Override)",
+      };
+      updatedRecords = [...allRecords, newRecord];
+    }
+
+    saveAttendanceRecords(updatedRecords);
+    setAttendanceRecords(updatedRecords);
+  };
+
+  // Admin Mark Entire Team Present Handler
+  const handleAdminMarkTeamPresent = (
+    sessionId: string,
+    sessionName: string,
+    teamId: string,
+    teamName: string,
+    members: TeamMember[]
+  ) => {
+    const allRecords = getAttendanceRecords();
+    const now = new Date().toISOString();
+    const updatedRecords = [...allRecords];
+
+    members.forEach((m) => {
+      const idx = updatedRecords.findIndex(
+        (r) => r.sessionId === sessionId && r.teamId === teamId && r.memberRegNo === m.regNo
+      );
+      if (idx !== -1) {
+        updatedRecords[idx] = {
+          ...updatedRecords[idx],
+          status: "PRESENT",
+          markedAt: now,
+          volunteerId: "Admin (Team Override)",
+        };
+      } else {
+        updatedRecords.push({
+          id: `att_admin_${sessionId}_${teamId}_${m.regNo}_${Date.now()}`,
+          sessionId,
+          sessionName,
+          teamId,
+          teamName,
+          memberRegNo: m.regNo,
+          memberName: m.name,
+          status: "PRESENT",
+          markedAt: now,
+          volunteerId: "Admin (Team Override)",
+        });
+      }
+    });
+
+    saveAttendanceRecords(updatedRecords);
+    setAttendanceRecords(updatedRecords);
+  };
+
   // Group Attendance Records Team-Wise
   const teamWiseAttendance = React.useMemo(() => {
     const map: Record<string, {
@@ -425,31 +516,59 @@ export default function AdminDashboard() {
       records: AttendanceRecord[];
     }> = {};
     
-    filteredAttendance.forEach((rec) => {
-      const key = `${rec.sessionId}_${rec.teamId}`;
-      if (!map[key]) {
+    if (attendanceSessionFilter !== "ALL") {
+      const selectedSess = sessions.find((s) => s.id === attendanceSessionFilter);
+      const targetSessionName = selectedSess ? selectedSess.name : "Attendance Session";
+      
+      teams.forEach((t) => {
+        const key = `${attendanceSessionFilter}_${t.id}`;
+        const teamRecs = attendanceRecords.filter(
+          (r) => r.sessionId === attendanceSessionFilter && r.teamId === t.id
+        );
+        const presentCount = teamRecs.filter((r) => r.status === "PRESENT").length;
+        const latestMarked = teamRecs.length > 0 ? teamRecs[0].markedAt : new Date().toISOString();
+        const latestVol = teamRecs.length > 0 ? teamRecs[0].volunteerId : "Admin / Unmarked";
+
         map[key] = {
           key,
-          sessionId: rec.sessionId,
-          sessionName: rec.sessionName,
-          teamId: rec.teamId,
-          teamName: rec.teamName,
-          presentCount: 0,
-          totalCount: 0,
-          markedAt: rec.markedAt,
-          volunteerId: rec.volunteerId,
-          records: [],
+          sessionId: attendanceSessionFilter,
+          sessionName: targetSessionName,
+          teamId: t.id,
+          teamName: t.teamName,
+          presentCount,
+          totalCount: t.members.length,
+          markedAt: latestMarked,
+          volunteerId: latestVol,
+          records: teamRecs,
         };
-      }
-      map[key].records.push(rec);
-      map[key].totalCount += 1;
-      if (rec.status === "PRESENT") {
-        map[key].presentCount += 1;
-      }
-    });
+      });
+    } else {
+      filteredAttendance.forEach((rec) => {
+        const key = `${rec.sessionId}_${rec.teamId}`;
+        if (!map[key]) {
+          map[key] = {
+            key,
+            sessionId: rec.sessionId,
+            sessionName: rec.sessionName,
+            teamId: rec.teamId,
+            teamName: rec.teamName,
+            presentCount: 0,
+            totalCount: 0,
+            markedAt: rec.markedAt,
+            volunteerId: rec.volunteerId,
+            records: [],
+          };
+        }
+        map[key].records.push(rec);
+        map[key].totalCount += 1;
+        if (rec.status === "PRESENT") {
+          map[key].presentCount += 1;
+        }
+      });
+    }
 
     return Object.values(map);
-  }, [filteredAttendance]);
+  }, [filteredAttendance, attendanceSessionFilter, sessions, teams, attendanceRecords]);
 
   // Export Attendance CSV Handler
   const handleExportAttendanceCSV = () => {
@@ -1070,41 +1189,85 @@ export default function AdminDashboard() {
                               </td>
                             </tr>
 
-                            {/* EXPANDABLE MEMBER BREAKDOWN */}
+                            {/* EXPANDABLE MEMBER BREAKDOWN WITH ADMIN ATTENDANCE OVERRIDE */}
                             {isExpanded && (
                               <tr className="bg-[#ECE9E1]/40">
                                 <td colSpan={6} className="p-4">
-                                  <div className="neu-inset p-4 rounded-2xl bg-[#ECE9E1] space-y-3">
-                                    <div className="flex items-center justify-between text-xs font-extrabold text-neu-muted uppercase tracking-wider border-b border-neu-text/10 pb-2">
-                                      <span>Team Member Attendance Breakdown ({item.teamId} — {item.teamName})</span>
-                                      <span>Volunteer: {item.volunteerId || "System"}</span>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                                      {item.records.map((memberRec) => (
-                                        <div
-                                          key={memberRec.id}
-                                          className={`p-3 rounded-xl border flex items-center justify-between ${
-                                            memberRec.status === "PRESENT"
-                                              ? "bg-emerald-50/80 border-emerald-300 text-emerald-900"
-                                              : "bg-rose-50/80 border-rose-300 text-rose-900"
-                                          }`}
-                                        >
+                                  {(() => {
+                                    const targetTeam = teams.find((t) => t.id === item.teamId);
+                                    const membersList = targetTeam ? targetTeam.members : [];
+
+                                    return (
+                                      <div className="neu-inset p-5 rounded-2xl bg-[#ECE9E1] space-y-4">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs font-extrabold text-neu-muted uppercase tracking-wider border-b border-neu-text/10 pb-3 gap-2">
                                           <div>
-                                            <p className="text-xs font-extrabold">{memberRec.memberName}</p>
-                                            <p className="text-[10px] opacity-75 font-semibold">{memberRec.memberRegNo}</p>
+                                            <span className="text-neu-text text-sm font-black">
+                                              Team Member Attendance Breakdown ({item.teamId} — {item.teamName})
+                                            </span>
+                                            <span className="block text-[10px] font-normal text-neu-muted mt-0.5">
+                                              Click any status button below to toggle student PRESENT / ABSENT
+                                            </span>
                                           </div>
-                                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                                            memberRec.status === "PRESENT"
-                                              ? "bg-emerald-600 text-white"
-                                              : "bg-rose-600 text-white"
-                                          }`}>
-                                            {memberRec.status}
-                                          </span>
+                                          
+                                          {targetTeam && (
+                                            <button
+                                              onClick={() => handleAdminMarkTeamPresent(item.sessionId, item.sessionName, item.teamId, item.teamName, targetTeam.members)}
+                                              className="neu-btn px-3.5 py-1.5 text-xs font-black text-emerald-800 hover:text-emerald-950 bg-emerald-100/90 rounded-xl shadow-sm border border-emerald-300 flex items-center gap-1.5"
+                                            >
+                                              <UserCheck className="w-4 h-4 text-emerald-700" />
+                                              <span>✓ Mark Entire Team Present</span>
+                                            </button>
+                                          )}
                                         </div>
-                                      ))}
-                                    </div>
-                                  </div>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                          {membersList.map((mem) => {
+                                            const rec = item.records.find((r) => r.memberRegNo === mem.regNo);
+                                            const status = rec ? rec.status : "ABSENT";
+
+                                            return (
+                                              <div
+                                                key={mem.regNo}
+                                                className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
+                                                  status === "PRESENT"
+                                                    ? "bg-emerald-50/90 border-emerald-300 text-emerald-950"
+                                                    : "bg-rose-50/90 border-rose-300 text-rose-950"
+                                                }`}
+                                              >
+                                                <div>
+                                                  <p className="text-xs font-extrabold">{mem.name}</p>
+                                                  <p className="text-[10px] opacity-80 font-semibold">{mem.regNo}</p>
+                                                </div>
+
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    handleAdminToggleAttendance(
+                                                      item.sessionId,
+                                                      item.sessionName,
+                                                      item.teamId,
+                                                      item.teamName,
+                                                      mem.regNo,
+                                                      mem.name,
+                                                      status
+                                                    )
+                                                  }
+                                                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all shadow-sm flex items-center gap-1 ${
+                                                    status === "PRESENT"
+                                                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                                                      : "bg-rose-600 text-white hover:bg-rose-700"
+                                                  }`}
+                                                  title="Click to toggle Present / Absent for this student"
+                                                >
+                                                  {status === "PRESENT" ? "✓ PRESENT" : "✕ ABSENT"}
+                                                </button>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
                                 </td>
                               </tr>
                             )}
