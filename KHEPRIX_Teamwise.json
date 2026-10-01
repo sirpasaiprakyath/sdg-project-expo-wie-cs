@@ -1,6 +1,4 @@
-import { Team } from "./types";
-
-export const SEEDED_TEAMS: Team[] = [
+[
   {
     "id": "KHX26-01",
     "teamName": "Team Legacy",
@@ -2041,4 +2039,4 @@ export const SEEDED_TEAMS: Team[] = [
     "category": "Software",
     "paymentStatus": "VERIFIED"
   }
-];
+]

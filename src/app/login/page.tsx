@@ -119,7 +119,7 @@ export default function LoginPage() {
               </div>
             </div>
             <span className="text-xs font-extrabold text-neu-text tracking-wide">
-              SDG FOCUSED PROJECT EXPO 2026
+              KHEPRIX’26 | PROJECT EXPO
             </span>
           </div>
 

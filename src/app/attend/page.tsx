@@ -527,7 +527,7 @@ export default function VolunteerAttendancePortal() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="e.g. SDG-001 or 23CSE1001 or Krishna"
+                        placeholder="e.g. KHX26-01 or 99240040854 or Sai"
                         className="w-full neu-inset p-4 text-sm font-semibold text-neu-text placeholder:text-neu-muted/50 focus:outline-none focus:ring-2 focus:ring-neu-gold/50"
                         required
                       />

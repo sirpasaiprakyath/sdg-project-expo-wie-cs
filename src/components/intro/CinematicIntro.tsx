@@ -158,19 +158,19 @@ export default function CinematicIntro({ onComplete }: CinematicIntroProps) {
             className="flex flex-col items-center justify-center text-center px-4"
           >
             <div className="neu-badge mb-5 text-neu-gold border-2 border-neu-gold/40 uppercase tracking-widest text-xs font-black py-1.5 px-5 shadow-sm">
-              24-HOUR HYBRID PROJECT EXPO 2026
+              CODING CHALLENGE + PROJECT EXPO 2026
             </div>
 
             <h1 className="text-4xl sm:text-6xl font-black text-neu-text tracking-tight mb-3">
-              SDG FOCUSED <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B89243]">PROJECT EXPO</span>
+              KHEPRIX’26 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B89243]">PROJECT EXPO</span>
             </h1>
 
-            <p className="text-lg sm:text-2xl font-black text-neu-green tracking-wide max-w-2xl mb-2">
-              INNOVATE TODAY — IMPACT TOMORROW
+            <p className="text-base sm:text-xl font-black text-neu-green tracking-wide max-w-2xl mb-2">
+              BORN FROM VISION. BUILT FOR ETERNITY.
             </p>
 
             <p className="text-xs sm:text-sm font-bold text-neu-muted max-w-xl">
-              BUILDING SOLUTIONS FOR A SUSTAINABLE FUTURE
+              CREATE YOUR LEGACY • 02 OCTOBER 2026
             </p>
           </motion.div>
         )}

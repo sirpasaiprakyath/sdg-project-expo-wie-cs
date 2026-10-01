@@ -19,7 +19,7 @@ export default function Footer() {
           </div>
           <div>
             <h4 className="text-xs font-extrabold text-neu-text tracking-wide">
-              SDG FOCUSED PROJECT EXPO 2026
+              KHEPRIX’26 | PROJECT EXPO
             </h4>
             <p className="text-[11px] font-medium text-neu-muted">
               Organized by IEEE WIE KARE & IEEE CS KARE
@@ -33,10 +33,10 @@ export default function Footer() {
         {/* Center: Tagline */}
         <div className="text-center md:text-right">
           <p className="text-xs font-semibold text-neu-gold tracking-wider uppercase">
-            INNOVATE TODAY — IMPACT TOMORROW
+            BORN FROM VISION. BUILT FOR ETERNITY.
           </p>
           <p className="text-[11px] text-neu-muted mt-1">
-            Together, let&apos;s build a better and sustainable world.
+            Create your legacy • Coding Challenge + Project Expo 2026.
           </p>
         </div>
       </div>

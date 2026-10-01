@@ -154,7 +154,7 @@ export default function LandingPage() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="text-4xl sm:text-6xl lg:text-7xl font-black text-neu-text tracking-tight mb-4 drop-shadow-sm"
         >
-          SDG FOCUSED <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B89243]">PROJECT EXPO</span>
+          KHEPRIX’26 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B89243]">PROJECT EXPO</span>
         </motion.h1>
 
         {/* Taglines */}
@@ -164,41 +164,51 @@ export default function LandingPage() {
           transition={{ delay: 0.4 }}
           className="text-lg sm:text-2xl lg:text-3xl font-black text-neu-green tracking-wide max-w-3xl mb-3"
         >
-          INNOVATE TODAY — IMPACT TOMORROW
+          BORN FROM VISION. BUILT FOR ETERNITY.
         </motion.p>
-        <p className="text-sm sm:text-base font-extrabold text-neu-muted max-w-2xl mb-10">
-          BUILDING SOLUTIONS FOR A SUSTAINABLE FUTURE
+        <p className="text-sm sm:text-base font-extrabold text-neu-gold tracking-widest uppercase max-w-2xl mb-4">
+          CREATE YOUR LEGACY
         </p>
+
+        {/* Event Pitch */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="max-w-2xl mx-auto neu-inset p-4 rounded-2xl bg-[#ECE9E1]/80 mb-8 border border-white/60 text-xs sm:text-sm font-semibold text-neu-text leading-relaxed"
+        >
+          Ready to discover how real-world applications work and reimagine them from the ground up? 💻🔥 Join <strong>KHEPRIX’26</strong>, an industry-oriented Coding Challenge + Project Expo designed to challenge and elevate your technical defense!
+        </motion.div>
 
         {/* Key Event Badges Grid */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl w-full mb-12"
+          className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl w-full mb-10"
         >
           <div className="neu-raised p-5 rounded-3xl flex flex-col items-center border border-white/80 shadow-lg hover:scale-105 transition-transform">
             <Calendar className="w-7 h-7 text-neu-gold mb-2" />
-            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Date</span>
-            <span className="text-sm font-black text-neu-text mt-0.5">Sep 3 & 4, 2026</span>
+            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Event Date</span>
+            <span className="text-sm font-black text-neu-text mt-0.5">02 October 2026</span>
           </div>
 
           <div className="neu-raised p-5 rounded-3xl flex flex-col items-center border border-white/80 shadow-lg hover:scale-105 transition-transform">
             <Clock className="w-7 h-7 text-neu-green mb-2" />
-            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Duration</span>
-            <span className="text-sm font-black text-neu-text mt-0.5">24 Hours (5 PM - 5 PM)</span>
+            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Timing</span>
+            <span className="text-sm font-black text-neu-text mt-0.5">9:00 AM – 5:00 PM</span>
           </div>
 
           <div className="neu-raised p-5 rounded-3xl flex flex-col items-center border border-white/80 shadow-lg hover:scale-105 transition-transform">
-            <Trophy className="w-7 h-7 text-amber-600 mb-2" />
-            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Prize Pool</span>
-            <span className="text-sm font-black text-neu-text mt-0.5">₹10K Cash Prize</span>
+            <MapPin className="w-7 h-7 text-amber-600 mb-2" />
+            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Venue</span>
+            <span className="text-sm font-black text-neu-text mt-0.5">8501 & 8601 Labs</span>
           </div>
 
           <div className="neu-raised p-5 rounded-3xl flex flex-col items-center border border-white/80 shadow-lg hover:scale-105 transition-transform">
-            <Award className="w-7 h-7 text-emerald-600 mb-2" />
-            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Credits</span>
-            <span className="text-sm font-black text-neu-text mt-0.5">2 EE Credits</span>
+            <Users className="w-7 h-7 text-emerald-600 mb-2" />
+            <span className="text-xs font-bold text-neu-muted uppercase tracking-wider">Team Size</span>
+            <span className="text-sm font-black text-neu-text mt-0.5">Max 4 Members</span>
           </div>
         </motion.div>
 
@@ -219,131 +229,123 @@ export default function LandingPage() {
         </motion.div>
       </motion.section>
 
-      {/* GRAND OLYMPIC PRIZE PODIUM SECTION */}
-      <section className="py-16 px-4 bg-gradient-to-b from-[#FAF8F4] to-[#F4F2EC] border-y border-white/80 relative overflow-hidden">
+      {/* CORE CHALLENGE SKILL PILLARS */}
+      <section className="py-12 px-4 bg-[#FAF8F4] border-y border-white/80">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <span className="neu-badge text-neu-gold font-black tracking-widest uppercase text-xs border border-neu-gold/30">
+              INDUSTRY-ORIENTED TRACKS
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-black text-neu-text mt-2">
+              FIVE CORE TECHNICAL CHALLENGE PILLARS
+            </h3>
+            <p className="text-xs sm:text-sm text-neu-muted font-medium mt-1">
+              Demonstrate architectural depth and engineering agility across these domains
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[
+              { icon: "🧩", title: "Reverse Engineering", desc: "Deconstruct systems & uncover algorithmic flow" },
+              { icon: "🏗️", title: "Software Architecture", desc: "Resilient component & data design patterns" },
+              { icon: "💻", title: "Feature Development", desc: "Build dynamic, scalable production capabilities" },
+              { icon: "🧪", title: "Testing & Debugging", desc: "Eliminate bottlenecks & ensure robust edge cases" },
+              { icon: "🔎", title: "Code Review & Defense", desc: "Technical presentation & jury defense" },
+            ].map((pillar, i) => (
+              <div key={i} className="neu-raised p-5 rounded-2xl bg-white/80 hover:scale-105 transition-transform flex flex-col items-center text-center">
+                <span className="text-3xl mb-2">{pillar.icon}</span>
+                <h4 className="text-xs font-black text-neu-text">{pillar.title}</h4>
+                <p className="text-[11px] text-neu-muted mt-1 leading-snug">{pillar.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* EVENT HIGHLIGHTS & HONORS SECTION */}
+      <section className="py-16 px-4 bg-gradient-to-b from-[#FAF8F4] to-[#F4F2EC] border-b border-white/80 relative overflow-hidden">
         <div className="max-w-6xl mx-auto w-full text-center space-y-12">
           
           <div>
             <span className="neu-badge text-neu-gold font-black tracking-widest uppercase text-xs border border-neu-gold/30 px-4 py-2 bg-white">
-              CHAMPIONSHIP HONORS & REWARDS
+              🎯 EXCLUSIVE EVENT HIGHLIGHTS
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-neu-text mt-3">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600">PRIZE POOL</span>
+              ACADEMIC CREDITS & <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600">SPECIAL PRIZE POOL</span>
             </h2>
             <p className="text-sm font-semibold text-neu-muted mt-2 max-w-xl mx-auto">
-              Compete for top innovation ranks, total cash prizes of ₹10,000, trophies, and 2 EE credits!
+              Compete for IEEE Membership, Special Prize Pool for the Best-Performing Team, and earn official credits!
             </p>
           </div>
 
-          {/* OLYMPIC 1, 2, 3 STAND BOARD */}
-          <div className="flex flex-col md:flex-row items-end justify-center gap-6 sm:gap-8 pt-8 pb-4">
-            
-            {/* 2nd Place Stand (Silver - Left) */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="w-full md:w-1/3 order-2 md:order-1 flex flex-col items-center"
-            >
-              {/* Stand Card Top (Silver Theme) */}
-              <div className="neu-raised p-6 rounded-3xl bg-gradient-to-b from-[#F8FAFC] via-[#E2E8F0] to-[#CBD5E1] w-full border-4 border-slate-300 shadow-xl text-center relative hover:scale-105 transition-transform">
-                <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-black text-slate-900 bg-white/90 uppercase tracking-wider mb-2 shadow-sm border border-slate-300">
-                  🥈 2ND PLACE (SILVER)
-                </span>
-                <h4 className="text-xl font-black text-slate-900 tracking-tight">RUNNER UP</h4>
-                <div className="my-3 flex items-center justify-center gap-1 text-slate-950">
-                  <span className="text-xl font-black">₹</span>
-                  <span className="text-4xl font-black tracking-tight text-slate-950">3,000</span>
-                </div>
+          {/* Highlights 6-Card Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+            <div className="neu-raised p-6 rounded-3xl bg-white/90 border border-amber-200/80 shadow-md hover:scale-[1.02] transition-transform">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl p-2.5 neu-inset rounded-2xl bg-amber-50">🎓</span>
+                <h4 className="text-sm font-black text-neu-text">2 EE Credits</h4>
               </div>
-
-              {/* Olympic Stand Block 2 (Silver Metallic) */}
-              <div className="w-full bg-gradient-to-t from-[#475569] via-[#94A3B8] to-[#E2E8F0] h-40 md:h-52 rounded-b-3xl neu-raised flex flex-col items-center justify-center border-t-4 border-slate-200 shadow-xl mt-2">
-                <span className="text-7xl font-black text-slate-900/40">2</span>
-                <span className="text-xs font-black text-slate-950 uppercase tracking-widest mt-1">SILVER STAND</span>
-              </div>
-            </motion.div>
-
-            {/* 1st Place Stand (Gold - Center - HIGHEST & GRANDEST) */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="w-full md:w-1/3 order-1 md:order-2 flex flex-col items-center -mt-6 md:-mt-10"
-            >
-              {/* Grand Crown Badge */}
-              <div className="neu-badge text-amber-950 bg-yellow-300 font-black text-xs px-4 py-1.5 rounded-full shadow-lg border-2 border-yellow-400 mb-2 flex items-center gap-1.5 animate-bounce">
-                <Trophy className="w-4 h-4 text-amber-950 fill-amber-600" />
-                <span>GRAND CHAMPION</span>
-              </div>
-
-              {/* Stand Card Top (Gold Theme) */}
-              <div className="neu-raised p-7 rounded-3xl bg-gradient-to-b from-[#FFF4A3] via-[#FFD700] to-[#F59E0B] w-full border-4 border-yellow-200 shadow-2xl text-center relative hover:scale-105 transition-transform">
-                <span className="inline-block px-4 py-1 rounded-full text-xs font-black text-amber-950 bg-white/90 uppercase tracking-wider mb-2 shadow-md border border-amber-300">
-                  🥇 1ST PLACE (GOLD)
-                </span>
-                <h4 className="text-2xl font-black text-amber-950 tracking-tight">OVERALL WINNER</h4>
-                <div className="my-3 flex items-center justify-center gap-1 text-amber-950">
-                  <span className="text-2xl font-black">₹</span>
-                  <span className="text-5xl font-black tracking-tight text-amber-950">5,000</span>
-                </div>
-              </div>
-
-              {/* Olympic Stand Block 1 (Gold Metallic) */}
-              <div className="w-full bg-gradient-to-t from-[#B8860B] via-[#FFD700] to-[#FFE87C] h-56 md:h-72 rounded-b-3xl neu-raised flex flex-col items-center justify-center border-t-4 border-yellow-200 shadow-2xl mt-2">
-                <span className="text-8xl font-black text-amber-950/40">1</span>
-                <span className="text-sm font-black text-amber-950 uppercase tracking-widest mt-1">GOLD STAND</span>
-              </div>
-            </motion.div>
-
-            {/* 3rd Place Stand (Bronze - Right) */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="w-full md:w-1/3 order-3 flex flex-col items-center"
-            >
-              {/* Stand Card Top (Bronze Theme) */}
-              <div className="neu-raised p-6 rounded-3xl bg-gradient-to-b from-[#FDF6F0] via-[#F3D5C0] to-[#CD7F32] w-full border-4 border-amber-600 shadow-xl text-center relative hover:scale-105 transition-transform">
-                <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-black text-amber-950 bg-white/90 uppercase tracking-wider mb-2 shadow-sm border border-amber-400">
-                  🥉 3RD PLACE (BRONZE)
-                </span>
-                <h4 className="text-xl font-black text-amber-950 tracking-tight">2ND RUNNER UP</h4>
-                <div className="my-3 flex items-center justify-center gap-1 text-amber-950">
-                  <span className="text-xl font-black">₹</span>
-                  <span className="text-4xl font-black tracking-tight text-amber-950">2,000</span>
-                </div>
-              </div>
-
-              {/* Olympic Stand Block 3 (Bronze Metallic) */}
-              <div className="w-full bg-gradient-to-t from-[#78350F] via-[#B45309] to-[#D97706] h-32 md:h-40 rounded-b-3xl neu-raised flex flex-col items-center justify-center border-t-4 border-amber-400 shadow-xl mt-2">
-                <span className="text-6xl font-black text-amber-950/50">3</span>
-                <span className="text-xs font-black text-amber-950 uppercase tracking-widest mt-1">BRONZE STAND</span>
-              </div>
-            </motion.div>
-
-          </div>
-
-          {/* Grand Perks Banner */}
-          <div className="neu-raised p-6 rounded-3xl bg-white flex flex-wrap items-center justify-around gap-4 border border-neu-gold/30">
-            <div className="flex items-center gap-3">
-              <Award className="w-6 h-6 text-neu-gold" />
-              <span className="text-xs font-extrabold text-neu-text">2 EE Credits for All Registered Participants</span>
+              <p className="text-xs text-neu-muted leading-relaxed font-semibold">
+                Direct academic accreditation for all participating <strong>3rd & 4th Year Students</strong> upon successful completion.
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-neu-green" />
-              <span className="text-xs font-extrabold text-neu-text">Official IEEE WIE & IEEE CS Certificates</span>
+
+            <div className="neu-raised p-6 rounded-3xl bg-white/90 border border-emerald-200/80 shadow-md hover:scale-[1.02] transition-transform">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl p-2.5 neu-inset rounded-2xl bg-emerald-50">📚</span>
+                <h4 className="text-sm font-black text-neu-text">Intensive Learning Structure</h4>
+              </div>
+              <p className="text-xs text-neu-muted leading-relaxed font-semibold">
+                <strong>2 Online Courses</strong> + <strong>15 Hours Coding Challenge</strong> + <strong>8 Hours Project Expo</strong>.
+              </p>
+            </div>
+
+            <div className="neu-raised p-6 rounded-3xl bg-white/90 border border-blue-200/80 shadow-md hover:scale-[1.02] transition-transform">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl p-2.5 neu-inset rounded-2xl bg-blue-50">🏆</span>
+                <h4 className="text-sm font-black text-neu-text">IEEE Membership for Top 2 Teams</h4>
+              </div>
+              <p className="text-xs text-neu-muted leading-relaxed font-semibold">
+                Prestigious <strong>IEEE Memberships</strong> awarded to the <strong>Top 2 Teams</strong> to empower international engineering careers.
+              </p>
+            </div>
+
+            <div className="neu-raised p-6 rounded-3xl bg-white/90 border border-purple-200/80 shadow-md hover:scale-[1.02] transition-transform">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl p-2.5 neu-inset rounded-2xl bg-purple-50">🎁</span>
+                <h4 className="text-sm font-black text-neu-text">Special Prize Pool</h4>
+              </div>
+              <p className="text-xs text-neu-muted leading-relaxed font-semibold">
+                Dedicated <strong>Special Prize Pool</strong> awarded to the <strong>Best-Performing Team</strong> of KHEPRIX’26!
+              </p>
+            </div>
+
+            <div className="neu-raised p-6 rounded-3xl bg-white/90 border border-rose-200/80 shadow-md hover:scale-[1.02] transition-transform">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl p-2.5 neu-inset rounded-2xl bg-rose-50">🎓</span>
+                <h4 className="text-sm font-black text-neu-text">Group 3: 2nd Year Certificate</h4>
+              </div>
+              <p className="text-xs text-neu-muted leading-relaxed font-semibold">
+                Official certificates for <strong>2nd Year Students</strong> (Group 3) verifying challenge completion and project display.
+              </p>
+            </div>
+
+            <div className="neu-raised p-6 rounded-3xl bg-white/90 border border-teal-200/80 shadow-md hover:scale-[1.02] transition-transform">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl p-2.5 neu-inset rounded-2xl bg-teal-50">👥</span>
+                <h4 className="text-sm font-black text-neu-text">Team Size: Max 4 Members</h4>
+              </div>
+              <p className="text-xs text-neu-muted leading-relaxed font-semibold">
+                Interdisciplinary teams of up to 4 members collaborating across reverse engineering & software deployment.
+              </p>
             </div>
           </div>
 
         </div>
       </section>
 
-      {/* Venue & Organizer Details Banner */}
-      <section className="bg-[#FAF8F4] py-14 px-4 border-y border-white/80">
+      {/* Venue & Logistics Banner */}
+      <section className="bg-[#FAF8F4] py-14 px-4 border-b border-white/80">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="neu-raised p-6 rounded-3xl flex items-start gap-4">
             <div className="p-3.5 neu-inset rounded-2xl text-neu-gold bg-[#ECE9E1]">
@@ -351,30 +353,30 @@ export default function LandingPage() {
             </div>
             <div>
               <h4 className="text-xs font-bold text-neu-muted uppercase tracking-wider">Venue Location</h4>
-              <p className="text-base font-black text-neu-text mt-1">Dr. Vasudevan Seminar Hall</p>
-              <p className="text-xs text-neu-muted">Tiffac Core, KARE Campus</p>
+              <p className="text-base font-black text-neu-text mt-1">8501 & 8601 Labs</p>
+              <p className="text-xs text-neu-muted">Kalasalingam Academy of Research and Education</p>
             </div>
           </div>
 
           <div className="neu-raised p-6 rounded-3xl flex items-start gap-4">
             <div className="p-3.5 neu-inset rounded-2xl text-neu-green bg-[#ECE9E1]">
-              <Users className="w-6 h-6" />
+              <Clock className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-neu-muted uppercase tracking-wider">Team Format</h4>
-              <p className="text-base font-black text-neu-text mt-1">4 Members Per Team</p>
-              <p className="text-xs text-neu-muted">Interdisciplinary Teams Welcome</p>
+              <h4 className="text-xs font-bold text-neu-muted uppercase tracking-wider">Event Schedule</h4>
+              <p className="text-base font-black text-neu-text mt-1">9:00 AM – 5:00 PM</p>
+              <p className="text-xs text-neu-muted">02 October 2026 • Full Day Expo</p>
             </div>
           </div>
 
           <div className="neu-raised p-6 rounded-3xl flex items-start gap-4">
             <div className="p-3.5 neu-inset rounded-2xl text-amber-700 bg-[#ECE9E1]">
-              <IndianRupee className="w-6 h-6" />
+              <Trophy className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-neu-muted uppercase tracking-wider">Registration Fee</h4>
-              <p className="text-base font-black text-neu-text mt-1">₹350 Per Team</p>
-              <p className="text-xs text-neu-muted">Includes Certificate & EE Credits</p>
+              <h4 className="text-xs font-bold text-neu-muted uppercase tracking-wider">Top Honors</h4>
+              <p className="text-base font-black text-neu-text mt-1">IEEE Membership + Cash Pool</p>
+              <p className="text-xs text-neu-muted">Top 2 Teams & Best Performing Team</p>
             </div>
           </div>
         </div>
@@ -444,11 +446,14 @@ export default function LandingPage() {
       {/* Additional Message Section */}
       <section className="py-14 bg-[#FAF8F4] px-4 border-t border-white/80 text-center">
         <div className="max-w-3xl mx-auto">
+          <span className="neu-badge text-neu-gold font-bold text-xs uppercase mb-3 inline-block">
+            02 OCTOBER 2026 • 8501 & 8601 LABS
+          </span>
           <h3 className="text-2xl md:text-3xl font-black text-neu-text mb-2">
-            TOGETHER, LET&apos;S BUILD A BETTER AND SUSTAINABLE WORLD
+            BORN FROM VISION. BUILT FOR ETERNITY. CREATE YOUR LEGACY.
           </h3>
           <p className="text-xs md:text-sm text-neu-muted mb-6 font-semibold">
-            Presented by IEEE Women in Engineering KARE & IEEE Computer Society KARE
+            Organized by IEEE Women in Engineering KARE & IEEE Computer Society KARE
           </p>
           <Link
             href="/login"

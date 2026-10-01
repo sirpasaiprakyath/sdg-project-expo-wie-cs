@@ -9,9 +9,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "SDG FOCUSED PROJECT EXPO | IEEE WIE & CS KARE",
-  description: "Organized by IEEE Women in Engineering KARE & IEEE Computer Society KARE at Kalasalingam Academy of Research and Education. September 3-4, 2026.",
-  keywords: ["SDG Project Expo", "IEEE WIE KARE", "IEEE CS KARE", "KLU", "Project Expo 2026"],
+  title: "KHEPRIX’26 | PROJECT EXPO | IEEE WIE & CS KARE",
+  description: "KHEPRIX’26: An industry-oriented Coding Challenge + Project Expo. Born from vision. Built for eternity. Create your legacy. Organized by IEEE Women in Engineering KARE & IEEE Computer Society KARE. October 2, 2026.",
+  keywords: ["KHEPRIX'26", "KHEPRIX", "Project Expo", "Coding Challenge", "IEEE WIE KARE", "IEEE CS KARE", "KLU", "Project Expo 2026"],
   authors: [{ name: "IEEE CS & WIE KARE" }],
 };
 

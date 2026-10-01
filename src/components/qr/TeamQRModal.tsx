@@ -35,7 +35,7 @@ export default function TeamQRModal({ team }: TeamQRModalProps) {
         ctx.fillStyle = "#2D2B2A";
         ctx.font = "bold 26px Outfit, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("SDG FOCUSED PROJECT EXPO 2026", 300, 50);
+        ctx.fillText("KHEPRIX’26 | PROJECT EXPO", 300, 50);
 
         ctx.fillStyle = "#C5A059";
         ctx.font = "bold 32px Outfit, sans-serif";
@@ -127,7 +127,7 @@ export default function TeamQRModal({ team }: TeamQRModalProps) {
             </button>
 
             <span className="text-xs font-extrabold text-neu-gold tracking-widest uppercase mb-1">
-              SDG FOCUSED PROJECT EXPO 2026
+              KHEPRIX’26 | PROJECT EXPO
             </span>
             <h2 className="text-3xl font-extrabold text-neu-text mb-1">{team.id}</h2>
             <p className="text-lg font-bold text-neu-green mb-6">{team.teamName}</p>

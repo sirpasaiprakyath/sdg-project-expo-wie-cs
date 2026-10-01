@@ -1,24 +1,30 @@
-import { Team, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewerEvaluation, ReviewRound } from './types';
+import { Team, TeamMember, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewerEvaluation, ReviewRound } from './types';
 import { SEEDED_TEAMS } from './seeded-teams';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 
 // Local storage keys
-const TEAMS_KEY = 'sdg_expo_teams';
-const SESSIONS_KEY = 'sdg_expo_sessions';
-const ATTENDANCE_KEY = 'sdg_expo_attendance';
-const PROBLEMS_KEY = 'sdg_expo_problems';
-const EVALS_KEY = 'sdg_expo_evals';
+const TEAMS_KEY = 'kheprix26_expo_teams';
+const SESSIONS_KEY = 'kheprix26_expo_sessions';
+const ATTENDANCE_KEY = 'kheprix26_expo_attendance';
+const PROBLEMS_KEY = 'kheprix26_expo_problems';
+const EVALS_KEY = 'kheprix26_expo_evals';
 
-// Ensure 30 registered teams are cleanly loaded
+// Ensure all 34 KHEPRIX'26 registered teams are cleanly loaded
 export function getInitialTeams(): Team[] {
   if (typeof window === 'undefined') return SEEDED_TEAMS;
   
+  // Clean up legacy SDG keys if present
+  if (localStorage.getItem('sdg_expo_teams')) {
+    localStorage.removeItem('sdg_expo_teams');
+  }
+
   const stored = localStorage.getItem(TEAMS_KEY);
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      // Validate that stored teams match KHEPRIX'26 format (KHX26-XX)
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.id?.startsWith('KHX26-')) {
         return parsed;
       }
     } catch (e) {
@@ -43,13 +49,117 @@ export function saveTeams(teams: Team[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
   try {
-    const teamsDocRef = doc(db, 'config', 'teams');
+    const teamsDocRef = doc(db, 'config', 'kheprix_teams');
     setDoc(teamsDocRef, { teams }, { merge: true }).catch((err) => {
       console.warn('Firestore saveTeams error:', err);
     });
   } catch (e) {
     console.warn('Firestore saveTeams error:', e);
   }
+}
+
+export function resetTeamsToDefault(): Team[] {
+  const cleanTeams = SEEDED_TEAMS.map((t) => ({
+    ...t,
+    problemStatementSubmitted: false,
+    pptSubmitted: false,
+    pptUrl: '',
+    pptSubmittedAt: undefined,
+  }));
+  saveTeams(cleanTeams);
+  return cleanTeams;
+}
+
+/**
+ * Updates a team's core details (e.g., name, category, paymentStatus, members)
+ */
+export function updateTeam(teamId: string, updatedFields: Partial<Team>): Team[] {
+  const currentTeams = getInitialTeams();
+  const updated = currentTeams.map((t) => {
+    if (t.id === teamId) {
+      return {
+        ...t,
+        ...updatedFields,
+      };
+    }
+    return t;
+  });
+  saveTeams(updated);
+
+  // If team name changed, update teamName in attendance records as well
+  if (updatedFields.teamName) {
+    const records = getAttendanceRecords();
+    let recordsChanged = false;
+    const updatedRecords = records.map((r) => {
+      if (r.teamId === teamId) {
+        recordsChanged = true;
+        return { ...r, teamName: updatedFields.teamName! };
+      }
+      return r;
+    });
+    if (recordsChanged) {
+      saveAttendanceRecords(updatedRecords);
+    }
+  }
+
+  return updated;
+}
+
+/**
+ * Updates a specific participant/member's details (name, email, phone, dept, year, role, etc.)
+ * Automatically updates attendance logs if participant name or regNo changes.
+ */
+export function updateTeamMember(
+  teamId: string,
+  memberRegNo: string,
+  updatedMember: Partial<TeamMember>
+): Team[] {
+  const currentTeams = getInitialTeams();
+  let oldMemberName = '';
+
+  const updated = currentTeams.map((t) => {
+    if (t.id === teamId) {
+      const updatedMembers = t.members.map((m) => {
+        if (m.regNo === memberRegNo) {
+          oldMemberName = m.name;
+          return {
+            ...m,
+            ...updatedMember,
+          };
+        }
+        return m;
+      });
+      return {
+        ...t,
+        members: updatedMembers,
+      };
+    }
+    return t;
+  });
+
+  saveTeams(updated);
+
+  // Synchronize attendance records if participant name or regNo was modified
+  if (updatedMember.name || updatedMember.regNo) {
+    const records = getAttendanceRecords();
+    let recordsChanged = false;
+    const updatedRecords = records.map((r) => {
+      if (r.teamId === teamId && r.memberRegNo === memberRegNo) {
+        recordsChanged = true;
+        return {
+          ...r,
+          memberName: updatedMember.name || r.memberName,
+          memberRegNo: updatedMember.regNo || r.memberRegNo,
+        };
+      }
+      return r;
+    });
+    if (recordsChanged) {
+      saveAttendanceRecords(updatedRecords);
+    }
+  }
+
+  return updated;
 }
 
 export function subscribeTeams(onChange: (teams: Team[]) => void) {
@@ -59,7 +169,7 @@ export function subscribeTeams(onChange: (teams: Team[]) => void) {
   onChange(local);
 
   try {
-    const teamsDocRef = doc(db, 'config', 'teams');
+    const teamsDocRef = doc(db, 'config', 'kheprix_teams');
     const unsubscribe = onSnapshot(
       teamsDocRef,
       (docSnap) => {
@@ -67,30 +177,36 @@ export function subscribeTeams(onChange: (teams: Team[]) => void) {
           const data = docSnap.data();
           if (Array.isArray(data?.teams) && data.teams.length > 0) {
             const remoteTeams = data.teams as Team[];
-            const localTeams = getInitialTeams();
+            // Ensure remote teams belong to KHEPRIX'26
+            if (remoteTeams[0]?.id?.startsWith('KHX26-')) {
+              const localTeams = getInitialTeams();
 
-            const teamMap = new Map<string, Team>();
-            remoteTeams.forEach((t) => teamMap.set(t.id, t));
+              const teamMap = new Map<string, Team>();
+              remoteTeams.forEach((t) => teamMap.set(t.id, t));
 
-            localTeams.forEach((lt) => {
-              const rt = teamMap.get(lt.id);
-              if (rt) {
-                const mergedTeam: Team = {
-                  ...rt,
-                  problemStatementSubmitted: rt.problemStatementSubmitted || lt.problemStatementSubmitted,
-                  pptSubmitted: rt.pptSubmitted || lt.pptSubmitted,
-                  pptUrl: rt.pptUrl || lt.pptUrl,
-                  pptSubmittedAt: rt.pptSubmittedAt || lt.pptSubmittedAt,
-                };
-                teamMap.set(lt.id, mergedTeam);
-              } else {
-                teamMap.set(lt.id, lt);
-              }
-            });
+              localTeams.forEach((lt) => {
+                const rt = teamMap.get(lt.id);
+                if (rt) {
+                  const mergedTeam: Team = {
+                    ...rt,
+                    problemStatementSubmitted: rt.problemStatementSubmitted || lt.problemStatementSubmitted,
+                    pptSubmitted: rt.pptSubmitted || lt.pptSubmitted,
+                    pptUrl: rt.pptUrl || lt.pptUrl,
+                    pptSubmittedAt: rt.pptSubmittedAt || lt.pptSubmittedAt,
+                  };
+                  teamMap.set(lt.id, mergedTeam);
+                } else {
+                  teamMap.set(lt.id, lt);
+                }
+              });
 
-            const merged = Array.from(teamMap.values());
-            localStorage.setItem(TEAMS_KEY, JSON.stringify(merged));
-            onChange(merged);
+              const merged = Array.from(teamMap.values());
+              localStorage.setItem(TEAMS_KEY, JSON.stringify(merged));
+              onChange(merged);
+            } else {
+              // Remote has stale SDG teams, overwrite remote with new KHEPRIX teams
+              saveTeams(local);
+            }
           }
         }
       },

@@ -72,7 +72,7 @@ export default function Navbar({ role = "participant", userName, teamId, onLogou
 
           <div className="hidden sm:flex flex-col">
             <span className="text-sm font-extrabold text-neu-text tracking-tight group-hover:text-neu-gold transition-colors">
-              SDG PROJECT EXPO
+              KHEPRIX’26 PROJECT EXPO
             </span>
             <span className="text-[10px] font-medium text-neu-muted tracking-wider">
               IEEE WIE & CS KARE

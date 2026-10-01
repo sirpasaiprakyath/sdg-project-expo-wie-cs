@@ -6,10 +6,15 @@ export interface TeamMember {
   email: string;
   department: string;
   year: string;
+  role?: string;
+  phone?: string;
+  gender?: string;
+  residentType?: string;
+  hostelName?: string;
 }
 
 export interface Team {
-  id: string; // Exact CSV Team ID e.g., "SDG-001"
+  id: string; // Exact Team ID e.g., "KHX26-01"
   teamName: string;
   members: TeamMember[];
   qrToken: string; // Permanent opaque secure token
@@ -18,6 +23,8 @@ export interface Team {
   pptSubmitted: boolean;
   pptUrl?: string;
   pptSubmittedAt?: string;
+  category?: string;
+  paymentStatus?: string;
 }
 
 export type SDGGoalKey = 'SDG_3' | 'SDG_4' | 'SDG_9' | 'SDG_11' | 'SDG_13';

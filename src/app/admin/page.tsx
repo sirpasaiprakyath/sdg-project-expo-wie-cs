@@ -25,7 +25,10 @@ import {
   getReviewRounds,
   saveReviewRounds,
   getEvaluations,
-  clearAllDemoData
+  clearAllDemoData,
+  updateTeam,
+  updateTeamMember,
+  resetTeamsToDefault
 } from "@/lib/store";
 import { Team, TeamMember, AttendanceSession, AttendanceRecord, ProblemStatement, ReviewRound, ReviewerEvaluation, ALLOWED_SDGS } from "@/lib/types";
 import { 
@@ -52,7 +55,11 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
-  UserCheck
+  UserCheck,
+  Edit3,
+  Save,
+  Check,
+  FileSpreadsheet
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -84,7 +91,13 @@ export default function AdminDashboard() {
   const [teamSearch, setTeamSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "PS_SUBMITTED" | "PPT_SUBMITTED">("ALL");
   const [attendanceSessionFilter, setAttendanceSessionFilter] = useState<string>("ALL");
+  const [attendanceSearchQuery, setAttendanceSearchQuery] = useState("");
+  const [attendanceStatusFilter, setAttendanceStatusFilter] = useState<"ALL" | "FULL" | "PARTIAL" | "ABSENT">("ALL");
   const [selectedTeamModal, setSelectedTeamModal] = useState<Team | null>(null);
+
+  // Participant Editing State
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editTeamSuccess, setEditTeamSuccess] = useState<string | null>(null);
 
   // Clear demo confirmation state
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -578,7 +591,7 @@ export default function AdminDashboard() {
     setAttendanceRecords(updatedRecords);
   };
 
-  // Group Attendance Records Team-Wise
+  // Group Attendance Records Team-Wise with search and ratio filters
   const teamWiseAttendance = React.useMemo(() => {
     const map: Record<string, {
       key: string;
@@ -644,36 +657,259 @@ export default function AdminDashboard() {
       });
     }
 
-    return Object.values(map);
-  }, [filteredAttendance, attendanceSessionFilter, sessions, teams, attendanceRecords]);
+    let result = Object.values(map);
 
-  // Export Attendance CSV Handler
-  const handleExportAttendanceCSV = () => {
-    if (filteredAttendance.length === 0) {
-      alert("No attendance records available to export.");
+    // Apply Search Query (Search by Team ID, Team Name, or member name)
+    if (attendanceSearchQuery.trim()) {
+      const q = attendanceSearchQuery.toLowerCase().trim();
+      result = result.filter((item) => {
+        const teamObj = teams.find(t => t.id === item.teamId);
+        const hasMember = teamObj?.members.some(m => 
+          m.name.toLowerCase().includes(q) || m.regNo.toLowerCase().includes(q)
+        );
+        return (
+          item.teamId.toLowerCase().includes(q) ||
+          item.teamName.toLowerCase().includes(q) ||
+          item.sessionName.toLowerCase().includes(q) ||
+          hasMember
+        );
+      });
+    }
+
+    // Apply Status Filter
+    if (attendanceStatusFilter === "FULL") {
+      result = result.filter(item => item.presentCount === item.totalCount && item.totalCount > 0);
+    } else if (attendanceStatusFilter === "PARTIAL") {
+      result = result.filter(item => item.presentCount > 0 && item.presentCount < item.totalCount);
+    } else if (attendanceStatusFilter === "ABSENT") {
+      result = result.filter(item => item.presentCount === 0);
+    }
+
+    return result;
+  }, [filteredAttendance, attendanceSessionFilter, sessions, teams, attendanceRecords, attendanceSearchQuery, attendanceStatusFilter]);
+
+  // 1. Export Team-Wise Attendance Summary (CSV)
+  const handleExportTeamSummaryCSV = () => {
+    if (teamWiseAttendance.length === 0) {
+      alert("No attendance summary records available to export.");
       return;
     }
 
-    const headers = ["Session Name", "Team ID", "Team Name", "Student Name", "Register Number", "Status", "Marked Time", "Volunteer Email"];
-    const rows = filteredAttendance.map((r) => [
-      `"${r.sessionName}"`,
-      `"${r.teamId}"`,
-      `"${r.teamName}"`,
-      `"${r.memberName}"`,
-      `"${r.memberRegNo}"`,
-      `"${r.status}"`,
-      `"${new Date(r.markedAt).toLocaleString()}"`,
-      `"${r.volunteerId || ''}"`
-    ]);
+    const headers = [
+      "Session Name",
+      "Team ID",
+      "Team Name",
+      "Total Members",
+      "Present Count",
+      "Absent Count",
+      "Attendance Rate (%)",
+      "Attendance Status",
+      "Last Marked Time",
+      "Volunteer / Verifier"
+    ];
+
+    const rows = teamWiseAttendance.map((item) => {
+      const pct = item.totalCount > 0 ? Math.round((item.presentCount / item.totalCount) * 100) : 0;
+      const statusStr = pct === 100 ? "FULL PRESENT" : pct > 0 ? "PARTIAL PRESENT" : "ALL ABSENT";
+      return [
+        `"${item.sessionName}"`,
+        `"${item.teamId}"`,
+        `"${item.teamName.replace(/"/g, '""')}"`,
+        item.totalCount,
+        item.presentCount,
+        item.totalCount - item.presentCount,
+        `${pct}%`,
+        `"${statusStr}"`,
+        `"${new Date(item.markedAt).toLocaleString()}"`,
+        `"${item.volunteerId || 'Admin'}"`
+      ];
+    });
 
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `SDG_Expo_Attendance_Records_${Date.now()}.csv`);
+    link.setAttribute("download", `KHEPRIX26_TeamWise_Attendance_Summary_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // 2. Export Detailed Participant-Wise Attendance Log (CSV)
+  const handleExportDetailedAttendanceCSV = () => {
+    const recordsToExport = filteredAttendance.length > 0 ? filteredAttendance : attendanceRecords;
+    if (recordsToExport.length === 0) {
+      alert("No attendance log records available to export.");
+      return;
+    }
+
+    const headers = [
+      "Session Name",
+      "Team ID",
+      "Team Name",
+      "Participant Name",
+      "Roll Number / Reg ID",
+      "Role",
+      "Department",
+      "Year",
+      "Resident Type",
+      "Hostel Name",
+      "Status",
+      "Marked Time",
+      "Verified By"
+    ];
+
+    const rows = recordsToExport.map((r) => {
+      const teamObj = teams.find(t => t.id === r.teamId);
+      const memObj = teamObj?.members.find(m => m.regNo === r.memberRegNo);
+
+      return [
+        `"${r.sessionName}"`,
+        `"${r.teamId}"`,
+        `"${r.teamName.replace(/"/g, '""')}"`,
+        `"${(memObj?.name || r.memberName).replace(/"/g, '""')}"`,
+        `"${r.memberRegNo}"`,
+        `"${memObj?.role || 'Member'}"`,
+        `"${memObj?.department || ''}"`,
+        `"${memObj?.year || ''}"`,
+        `"${memObj?.residentType || ''}"`,
+        `"${memObj?.hostelName || ''}"`,
+        `"${r.status}"`,
+        `"${new Date(r.markedAt).toLocaleString()}"`,
+        `"${r.volunteerId || 'Admin'}"`
+      ];
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `KHEPRIX26_Detailed_Participant_Attendance_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // 3. Export Master Attendance Matrix (All sessions as columns side-by-side)
+  const handleExportMasterMatrixCSV = () => {
+    if (teams.length === 0) {
+      alert("No registered teams available to export matrix.");
+      return;
+    }
+
+    const sessionCols = sessions.map(s => s.name);
+    const headers = [
+      "S.No",
+      "Team ID",
+      "Team Name",
+      "Roll Number / Reg ID",
+      "Participant Name",
+      "Role",
+      "Department",
+      "Year",
+      ...sessionCols.map(s => `"${s.replace(/"/g, '""')}"`),
+      "Total Sessions Attended",
+      "Total Sessions",
+      "Overall Attendance Rate (%)"
+    ];
+
+    let serial = 1;
+    const rows: (string | number)[][] = [];
+
+    teams.forEach((t) => {
+      t.members.forEach((m) => {
+        let attendedCount = 0;
+        const sessionStatuses = sessions.map((s) => {
+          const rec = attendanceRecords.find(
+            r => r.sessionId === s.id && r.teamId === t.id && r.memberRegNo === m.regNo
+          );
+          if (rec && rec.status === "PRESENT") {
+            attendedCount += 1;
+            return `"PRESENT"`;
+          } else if (rec && rec.status === "ABSENT") {
+            return `"ABSENT"`;
+          } else {
+            return `"NOT RECORDED"`;
+          }
+        });
+
+        const overallPct = sessions.length > 0 ? Math.round((attendedCount / sessions.length) * 100) : 0;
+
+        rows.push([
+          serial++,
+          `"${t.id}"`,
+          `"${t.teamName.replace(/"/g, '""')}"`,
+          `"${m.regNo}"`,
+          `"${m.name.replace(/"/g, '""')}"`,
+          `"${m.role || 'Member'}"`,
+          `"${m.department || ''}"`,
+          `"${m.year || ''}"`,
+          ...sessionStatuses,
+          attendedCount,
+          sessions.length,
+          `${overallPct}%`
+        ]);
+      });
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `KHEPRIX26_Master_Attendance_Matrix_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Admin Save Edited Team & Members
+  const handleSaveEditedTeam = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTeam) return;
+
+    if (!editingTeam.teamName.trim()) {
+      alert("Team Name cannot be empty.");
+      return;
+    }
+
+    for (let i = 0; i < editingTeam.members.length; i++) {
+      const m = editingTeam.members[i];
+      if (!m.name.trim()) {
+        alert(`Member ${i + 1} Name cannot be empty.`);
+        return;
+      }
+      if (!m.regNo.trim()) {
+        alert(`Member ${i + 1} Registration Number cannot be empty.`);
+        return;
+      }
+    }
+
+    const updated = updateTeam(editingTeam.id, {
+      teamName: editingTeam.teamName.trim(),
+      category: editingTeam.category,
+      members: editingTeam.members,
+    });
+
+    setTeams(updated);
+
+    if (selectedTeamModal?.id === editingTeam.id) {
+      const refreshed = updated.find(t => t.id === editingTeam.id) || null;
+      setSelectedTeamModal(refreshed);
+    }
+
+    setEditTeamSuccess(`Team ${editingTeam.id} updated successfully!`);
+    setTimeout(() => setEditTeamSuccess(null), 3500);
+    setEditingTeam(null);
+  };
+
+  // Reset to default seed teams
+  const handleResetToSeedData = () => {
+    if (confirm("Are you sure you want to reset all 34 teams to the original KHEPRIX'26 seed roster? Any local name edits will be restored to default.")) {
+      const reset = resetTeamsToDefault();
+      setTeams(reset);
+      setEditTeamSuccess("Successfully reloaded all 34 KHEPRIX'26 teams from seed roster!");
+      setTimeout(() => setEditTeamSuccess(null), 3500);
+    }
   };
 
   // Calculate Attendance Stats
@@ -1180,36 +1416,85 @@ export default function AdminDashboard() {
 
             {/* Attendance Records Filter & Table */}
             <div className="neu-raised p-6 sm:p-8 rounded-3xl space-y-6 bg-[#FAF8F4]">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-2 border-b border-neu-text/10">
                 <div>
                   <h3 className="text-lg font-extrabold text-neu-text">Team-Wise Attendance Summary</h3>
                   <p className="text-xs text-neu-muted">Aggregated present/absent member counts per team for each session</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  {/* Session Filter */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-neu-muted uppercase">Filter Session:</span>
-                    <select
-                      value={attendanceSessionFilter}
-                      onChange={(e) => setAttendanceSessionFilter(e.target.value)}
-                      className="neu-inset p-2.5 text-xs font-bold text-neu-text bg-[#ECE9E1] rounded-xl focus:outline-none"
-                    >
-                      <option value="ALL">All Sessions</option>
-                      {sessions.map((s) => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Export CSV Button */}
+                {/* 3 Comprehensive Export Actions */}
+                <div className="flex flex-wrap items-center gap-2">
                   <button
-                    onClick={handleExportAttendanceCSV}
-                    className="neu-btn neu-btn-gold px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 shadow-sm"
+                    onClick={handleExportTeamSummaryCSV}
+                    className="neu-btn neu-btn-gold px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-sm"
+                    title="Export aggregated present/absent counts per team (CSV)"
                   >
-                    <Download className="w-4 h-4 text-neu-text" />
-                    <span>EXPORT ATTENDANCE CSV</span>
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Team Summary (CSV)</span>
                   </button>
+
+                  <button
+                    onClick={handleExportDetailedAttendanceCSV}
+                    className="neu-btn px-3.5 py-2 rounded-xl text-xs font-black text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 flex items-center gap-1.5 shadow-sm"
+                    title="Export every individual student's attendance record (CSV)"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Detailed Log (CSV)</span>
+                  </button>
+
+                  <button
+                    onClick={handleExportMasterMatrixCSV}
+                    className="neu-btn px-3.5 py-2 rounded-xl text-xs font-black text-purple-900 bg-purple-100 hover:bg-purple-200 border border-purple-300 flex items-center gap-1.5 shadow-sm"
+                    title="Export all students with every session in side-by-side columns (CSV)"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-purple-700" />
+                    <span>Master Matrix (CSV)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Attendance Search & Multi-Filters Toolbar */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                {/* Search query */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={attendanceSearchQuery}
+                    onChange={(e) => setAttendanceSearchQuery(e.target.value)}
+                    placeholder="Search Team ID, Name, Roll No..."
+                    className="w-full neu-inset p-2.5 pl-8 text-xs font-semibold text-neu-text placeholder:text-neu-muted bg-[#ECE9E1] rounded-xl focus:outline-none"
+                  />
+                  <Search className="w-3.5 h-3.5 text-neu-muted absolute left-2.5 top-3" />
+                </div>
+
+                {/* Session Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-neu-muted uppercase shrink-0">Session:</span>
+                  <select
+                    value={attendanceSessionFilter}
+                    onChange={(e) => setAttendanceSessionFilter(e.target.value)}
+                    className="w-full neu-inset p-2 text-xs font-bold text-neu-text bg-[#ECE9E1] rounded-xl focus:outline-none"
+                  >
+                    <option value="ALL">All Attendance Sessions ({sessions.length})</option>
+                    {sessions.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name} {s.isActive ? "● Active" : ""}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Ratio / Status Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-neu-muted uppercase shrink-0">Status:</span>
+                  <select
+                    value={attendanceStatusFilter}
+                    onChange={(e) => setAttendanceStatusFilter(e.target.value as any)}
+                    className="w-full neu-inset p-2 text-xs font-bold text-neu-text bg-[#ECE9E1] rounded-xl focus:outline-none"
+                  >
+                    <option value="ALL">All Attendance Ratios</option>
+                    <option value="FULL">100% Full Attendance</option>
+                    <option value="PARTIAL">Partial Attendance</option>
+                    <option value="ABSENT">Zero Attendance / Unmarked</option>
+                  </select>
                 </div>
               </div>
 
@@ -1384,17 +1669,29 @@ export default function AdminDashboard() {
                 <Search className="w-4 h-4 text-neu-muted absolute left-3 top-3" />
               </div>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <span className="text-xs font-bold text-neu-muted uppercase">Filter:</span>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
-                  className="neu-inset p-2.5 text-xs font-bold text-neu-text bg-[#ECE9E1] rounded-xl focus:outline-none"
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-neu-muted uppercase">Filter:</span>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="neu-inset p-2.5 text-xs font-bold text-neu-text bg-[#ECE9E1] rounded-xl focus:outline-none"
+                  >
+                    <option value="ALL">All Registered Teams ({teams.length})</option>
+                    <option value="PS_SUBMITTED">Problem Statement Submitted</option>
+                    <option value="PPT_SUBMITTED">PPT Submitted</option>
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleResetToSeedData}
+                  className="neu-btn px-3 py-2 text-xs font-bold text-neu-gold hover:text-amber-800 rounded-xl flex items-center gap-1.5 shadow-sm"
+                  title="Reset team data back to the clean KHEPRIX'26 seed roster"
                 >
-                  <option value="ALL">All Registered Teams ({teams.length})</option>
-                  <option value="PS_SUBMITTED">Problem Statement Submitted</option>
-                  <option value="PPT_SUBMITTED">PPT Submitted</option>
-                </select>
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reload Seed</span>
+                </button>
               </div>
             </div>
 
@@ -1424,8 +1721,15 @@ export default function AdminDashboard() {
                       <div className="neu-inset p-3 rounded-2xl bg-[#ECE9E1] space-y-1 mb-4">
                         <span className="text-[10px] font-bold text-neu-muted uppercase block">STUDENT MEMBERS</span>
                         {t.members.map((m, idx) => (
-                          <p key={idx} className="text-xs text-neu-text font-semibold truncate">
-                            {idx + 1}. {m.name} <span className="text-neu-muted">({m.regNo})</span>
+                          <p key={idx} className="text-xs text-neu-text font-semibold truncate flex items-center justify-between">
+                            <span>
+                              {idx + 1}. {m.name} <span className="text-neu-muted">({m.regNo})</span>
+                            </span>
+                            {m.role && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white text-neu-gold">
+                                {m.role === "Team Leader" ? "Lead" : `M${idx + 1}`}
+                              </span>
+                            )}
                           </p>
                         ))}
                       </div>
@@ -1445,14 +1749,24 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    {/* Action Button to Open Detailed Modal */}
-                    <button
-                      onClick={() => setSelectedTeamModal(t)}
-                      className="w-full neu-btn neu-btn-gold py-2.5 text-xs font-extrabold flex items-center justify-center gap-2 rounded-xl"
-                    >
-                      <FileText className="w-4 h-4" />
-                      <span>VIEW DETAILS & SUBMISSIONS</span>
-                    </button>
+                    {/* Action Buttons: View Details & Edit Participants */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-neu-text/10">
+                      <button
+                        onClick={() => setSelectedTeamModal(t)}
+                        className="flex-1 neu-btn neu-btn-gold py-2.5 text-xs font-extrabold flex items-center justify-center gap-1.5 rounded-xl shadow-sm"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>View Details</span>
+                      </button>
+                      <button
+                        onClick={() => setEditingTeam(JSON.parse(JSON.stringify(t)))}
+                        className="neu-btn px-3 py-2.5 text-xs font-extrabold text-emerald-800 hover:text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-xl flex items-center gap-1.5 shadow-sm"
+                        title="Edit Participant Names, Roll Numbers & Team Details"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Edit Names</span>
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -1598,23 +1912,51 @@ export default function AdminDashboard() {
               </button>
 
               {/* Modal Header */}
-              <div className="border-b border-neu-text/10 pb-4">
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="neu-badge text-neu-gold font-black text-xs px-3 py-1">
-                    {selectedTeamModal.id}
-                  </span>
-                  <span className="text-xs font-bold text-neu-muted">SDG Focused Project Expo 2026</span>
+              <div className="border-b border-neu-text/10 pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pr-10">
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="neu-badge text-neu-gold font-black text-xs px-3 py-1">
+                      {selectedTeamModal.id}
+                    </span>
+                    <span className="text-xs font-bold text-neu-muted">KHEPRIX’26 Project Expo</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-neu-text">{selectedTeamModal.teamName}</h2>
                 </div>
-                <h2 className="text-2xl font-black text-neu-text">{selectedTeamModal.teamName}</h2>
+
+                <button
+                  type="button"
+                  onClick={() => setEditingTeam(JSON.parse(JSON.stringify(selectedTeamModal)))}
+                  className="neu-btn px-4 py-2 text-xs font-black text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-xl flex items-center gap-1.5 shadow-sm"
+                >
+                  <Edit3 className="w-4 h-4 text-emerald-700" />
+                  <span>Edit Team / Members</span>
+                </button>
               </div>
 
               {/* Team Members List */}
-              <div className="neu-inset p-4 rounded-2xl bg-[#ECE9E1] space-y-2">
-                <h4 className="text-xs font-extrabold text-neu-gold uppercase">REGISTERED TEAM MEMBERS (4)</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="neu-inset p-4 rounded-2xl bg-[#ECE9E1] space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-extrabold text-neu-gold uppercase">REGISTERED TEAM MEMBERS (4)</h4>
+                  <span className="text-[10px] text-neu-muted font-bold">Category: {selectedTeamModal.category || "Software"}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {selectedTeamModal.members.map((m, i) => (
-                    <div key={i} className="text-xs text-neu-text font-semibold">
-                      • {m.name} <span className="text-neu-muted">({m.regNo})</span>
+                    <div key={i} className="p-3 bg-white/80 rounded-xl neu-raised-sm flex flex-col justify-between">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-xs font-extrabold text-neu-text">{m.name}</p>
+                          <p className="text-[11px] font-semibold text-neu-gold">{m.regNo}</p>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ECE9E1] text-neu-muted uppercase">
+                          {m.role || (i === 0 ? "Team Leader" : `Member ${i + 1}`)}
+                        </span>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-neu-text/10 text-[10px] text-neu-muted flex flex-wrap gap-x-3 gap-y-1">
+                        <span>Dept: <strong className="text-neu-text">{m.department}</strong></span>
+                        <span>Year: <strong className="text-neu-text">{m.year}</strong></span>
+                        {m.phone && <span>Phone: <strong className="text-neu-text">{m.phone}</strong></span>}
+                        {m.residentType && <span>Hostel: <strong className="text-neu-text">{m.hostelName || m.residentType}</strong></span>}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1836,6 +2178,259 @@ export default function AdminDashboard() {
                 </div>
               </form>
             </div>
+          </div>
+        )}
+
+        {/* EDIT TEAM & PARTICIPANTS MODAL */}
+        {editingTeam && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div className="neu-raised-lg p-6 sm:p-8 rounded-3xl bg-[#FAF8F4] max-w-4xl w-full max-h-[92vh] overflow-y-auto space-y-6 relative my-6">
+              
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setEditingTeam(null)}
+                className="absolute top-6 right-6 neu-btn p-2 text-neu-muted hover:text-neu-text rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Modal Header */}
+              <div className="border-b border-neu-text/10 pb-4 pr-10">
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="neu-badge text-neu-gold font-black text-xs px-3 py-1">
+                    {editingTeam.id}
+                  </span>
+                  <span className="neu-badge text-emerald-800 bg-emerald-100 font-bold text-xs">
+                    PARTICIPANT DETAILS EDITOR
+                  </span>
+                </div>
+                <h2 className="text-2xl font-black text-neu-text">Edit Team & Member Names</h2>
+                <p className="text-xs text-neu-muted mt-1 font-medium">
+                  Update participant details, fix typos, change phone numbers, or correct registration numbers. Changes synchronize instantly across attendance, evaluations, and dashboards.
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveEditedTeam} className="space-y-6">
+                
+                {/* Team Info Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-extrabold text-neu-gold uppercase tracking-wider mb-1.5">
+                      TEAM NAME *
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTeam.teamName}
+                      onChange={(e) =>
+                        setEditingTeam({
+                          ...editingTeam,
+                          teamName: e.target.value,
+                        })
+                      }
+                      className="w-full neu-inset p-3 text-sm font-bold text-neu-text bg-[#ECE9E1] rounded-xl focus:outline-none focus:ring-2 focus:ring-neu-gold/50"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold text-neu-gold uppercase tracking-wider mb-1.5">
+                      PROJECT CATEGORY
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTeam.category || "Software"}
+                      onChange={(e) =>
+                        setEditingTeam({
+                          ...editingTeam,
+                          category: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. Software, Hardware, AI/ML"
+                      className="w-full neu-inset p-3 text-sm font-bold text-neu-text bg-[#ECE9E1] rounded-xl focus:outline-none focus:ring-2 focus:ring-neu-gold/50"
+                    />
+                  </div>
+                </div>
+
+                {/* 4 Registered Members Editor Cards */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-black text-neu-gold uppercase tracking-wider flex items-center gap-2">
+                    <Users className="w-4 h-4 text-neu-gold" />
+                    <span>REGISTERED PARTICIPANTS ({editingTeam.members.length})</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {editingTeam.members.map((m, idx) => (
+                      <div
+                        key={idx}
+                        className="neu-inset p-5 rounded-2xl bg-[#ECE9E1] space-y-3 border border-white/60"
+                      >
+                        <div className="flex items-center justify-between pb-2 border-b border-neu-text/10">
+                          <span className="text-xs font-black text-neu-text">
+                            {idx === 0 ? "👑 MEMBER 1 (TEAM LEADER)" : `MEMBER ${idx + 1}`}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white text-neu-gold">
+                            {m.role || (idx === 0 ? "Team Leader" : "Member")}
+                          </span>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-extrabold text-neu-muted uppercase mb-1">
+                            Participant Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            value={m.name}
+                            onChange={(e) => {
+                              const newMembers = [...editingTeam.members];
+                              newMembers[idx] = { ...m, name: e.target.value };
+                              setEditingTeam({ ...editingTeam, members: newMembers });
+                            }}
+                            className="w-full neu-raised-sm p-2.5 text-xs font-bold text-neu-text bg-white rounded-xl focus:outline-none"
+                            required
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-extrabold text-neu-muted uppercase mb-1">
+                              Reg Number / Roll No *
+                            </label>
+                            <input
+                              type="text"
+                              value={m.regNo}
+                              onChange={(e) => {
+                                const newMembers = [...editingTeam.members];
+                                newMembers[idx] = { ...m, regNo: e.target.value };
+                                setEditingTeam({ ...editingTeam, members: newMembers });
+                              }}
+                              className="w-full neu-raised-sm p-2 text-xs font-bold text-neu-text bg-white rounded-xl focus:outline-none"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-extrabold text-neu-muted uppercase mb-1">
+                              Year of Study
+                            </label>
+                            <select
+                              value={m.year || "3rd Year"}
+                              onChange={(e) => {
+                                const newMembers = [...editingTeam.members];
+                                newMembers[idx] = { ...m, year: e.target.value };
+                                setEditingTeam({ ...editingTeam, members: newMembers });
+                              }}
+                              className="w-full neu-raised-sm p-2 text-xs font-bold text-neu-text bg-white rounded-xl focus:outline-none"
+                            >
+                              <option value="2nd Year">2nd Year</option>
+                              <option value="3rd Year">3rd Year</option>
+                              <option value="4th Year">4th Year</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-extrabold text-neu-muted uppercase mb-1">
+                              Email Address
+                            </label>
+                            <input
+                              type="email"
+                              value={m.email}
+                              onChange={(e) => {
+                                const newMembers = [...editingTeam.members];
+                                newMembers[idx] = { ...m, email: e.target.value };
+                                setEditingTeam({ ...editingTeam, members: newMembers });
+                              }}
+                              className="w-full neu-raised-sm p-2 text-xs font-semibold text-neu-text bg-white rounded-xl focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-extrabold text-neu-muted uppercase mb-1">
+                              Phone Number
+                            </label>
+                            <input
+                              type="tel"
+                              value={m.phone || ""}
+                              onChange={(e) => {
+                                const newMembers = [...editingTeam.members];
+                                newMembers[idx] = { ...m, phone: e.target.value };
+                                setEditingTeam({ ...editingTeam, members: newMembers });
+                              }}
+                              placeholder="e.g. 9876543210"
+                              className="w-full neu-raised-sm p-2 text-xs font-semibold text-neu-text bg-white rounded-xl focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-extrabold text-neu-muted uppercase mb-1">
+                              Department
+                            </label>
+                            <input
+                              type="text"
+                              value={m.department}
+                              onChange={(e) => {
+                                const newMembers = [...editingTeam.members];
+                                newMembers[idx] = { ...m, department: e.target.value };
+                                setEditingTeam({ ...editingTeam, members: newMembers });
+                              }}
+                              className="w-full neu-raised-sm p-2 text-xs font-semibold text-neu-text bg-white rounded-xl focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-extrabold text-neu-muted uppercase mb-1">
+                              Resident Type / Hostel
+                            </label>
+                            <input
+                              type="text"
+                              value={m.hostelName || m.residentType || ""}
+                              onChange={(e) => {
+                                const newMembers = [...editingTeam.members];
+                                newMembers[idx] = { ...m, hostelName: e.target.value };
+                                setEditingTeam({ ...editingTeam, members: newMembers });
+                              }}
+                              placeholder="e.g. MH-1, LH-2, Day Scholar"
+                              className="w-full neu-raised-sm p-2 text-xs font-semibold text-neu-text bg-white rounded-xl focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Modal Footer Buttons */}
+                <div className="flex justify-end gap-3 pt-3 border-t border-neu-text/10">
+                  <button
+                    type="button"
+                    onClick={() => setEditingTeam(null)}
+                    className="neu-btn px-5 py-2.5 text-xs font-bold text-neu-muted hover:text-neu-text rounded-xl"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="neu-btn neu-btn-gold px-7 py-2.5 text-xs font-extrabold flex items-center gap-2 rounded-xl shadow-md"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>SAVE TEAM & MEMBER CHANGES</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Team Toast Notification */}
+        {editTeamSuccess && (
+          <div className="fixed bottom-6 right-6 z-50 neu-raised p-4 rounded-2xl bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs flex items-center gap-2.5 shadow-2xl">
+            <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
+            <span>{editTeamSuccess}</span>
           </div>
         )}
 

@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import TeamQRModal from "@/components/qr/TeamQRModal";
 import { getInitialTeams, getSessions, getAttendanceRecords, subscribeSessions, subscribeAttendanceRecords } from "@/lib/store";
 import { Team, AttendanceSession, AttendanceRecord } from "@/lib/types";
-import { QrCode, CheckCircle2, XCircle, Clock, ShieldCheck } from "lucide-react";
+import { QrCode, CheckCircle2, XCircle, Clock, ShieldCheck, Download } from "lucide-react";
 
 export default function ParticipantAttendance() {
   const router = useRouter();
@@ -45,6 +45,38 @@ export default function ParticipantAttendance() {
     };
   }, [router]);
 
+  const handleExportMyTeamAttendance = () => {
+    if (!team) return;
+    const headers = ["Session Name", "Team ID", "Team Name", "Student Name", "Roll Number", "Status", "Marked Time"];
+    const rows: string[][] = [];
+
+    sessions.forEach((s) => {
+      team.members.forEach((m) => {
+        const rec = attendanceRecords.find((r) => r.sessionId === s.id && r.memberRegNo === m.regNo);
+        const status = rec ? rec.status : "ABSENT / NOT MARKED";
+        const time = rec ? new Date(rec.markedAt).toLocaleString() : "—";
+        rows.push([
+          `"${s.name}"`,
+          `"${team.id}"`,
+          `"${team.teamName.replace(/"/g, '""')}"`,
+          `"${m.name.replace(/"/g, '""')}"`,
+          `"${m.regNo}"`,
+          `"${status}"`,
+          `"${time}"`
+        ]);
+      });
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `KHEPRIX26_Attendance_${team.id}_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!team || !sessionUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F4F2EC]">
@@ -78,6 +110,14 @@ export default function ParticipantAttendance() {
               Team <strong className="text-neu-text">{team.id}</strong> — {team.teamName}
             </p>
           </div>
+
+          <button
+            onClick={handleExportMyTeamAttendance}
+            className="neu-btn neu-btn-gold px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            <span>EXPORT TEAM ATTENDANCE (CSV)</span>
+          </button>
         </div>
 
         {/* Attendance Grid */}
